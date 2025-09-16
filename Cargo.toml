@@ -1,0 +1,9 @@
+[package]
+name = "boxing"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+burn = {version = "0.18.0", features = ["std", "tui", "train", "wgpu"]}
+macroquad = "0.4.14"
+parry2d = "0.24.0"
