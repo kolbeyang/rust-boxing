@@ -159,7 +159,7 @@ impl Player {
                     fist.position += delta;
 
                     if (fist.position - self.position).magnitude() > Player::REACH {
-                        println!("Fist {i} retracting");
+                        //println!("Fist {i} retracting");
                         fist.state = FistState::Retracting {
                             speed: Player::PUNCH_SPEED,
                         };
@@ -171,7 +171,7 @@ impl Player {
                     fist.position += delta;
 
                     if (fist.position - fists_resting_pos[i]).magnitude() < Player::PUNCH_SPEED {
-                        println!("Fist {i} ended punch");
+                        //println!("Fist {i} ended punch");
                         fist.state = FistState::Resting;
                     }
                 }
@@ -219,8 +219,8 @@ impl Observation {
     const MAX_VELOCITY: f32 = 20.0;
     const MAX_LOCAL_DISTANCE: f32 = 300.0;
 
-    pub fn normalize(&self) -> Vec<f32> {
-        vec![
+    pub fn normalize(&self) -> [f32; 23] {
+        [
             // Health values (0-1 range)
             self.health / Player::STARTING_HEALTH,
             self.op_health / Player::STARTING_HEALTH,
@@ -266,6 +266,10 @@ pub struct StepResult {
 
 pub struct GameState {
     pub players: [Player; 2],
+
+    // TODO: remove
+    pub num_punches: [usize; 2],
+    pub num_landed_punches: [usize; 2],
 }
 
 impl GameState {
@@ -278,17 +282,19 @@ impl GameState {
 
         Self {
             players: [player_0, player_1],
+            num_punches: [0, 0],
+            num_landed_punches: [0, 0],
         }
     }
 
     pub fn step(&mut self, controls: [Control; 2]) -> StepResult {
-        let initial_health: Vec<f32> = self.players.iter().map(|p| p.health).collect();
+        let initial_health = [self.players[0].health, self.players[1].health];
 
         for (i, player) in self.players.iter_mut().enumerate() {
             player.handle_move(controls[i])
         }
         // Check punch contact
-        let players_pos: Vec<Vector<f32>> = self.players.iter().map(|p| p.position).collect();
+        let players_pos = [self.players[0].position, self.players[1].position];
 
         for player in self.players.iter_mut() {
             player.handle_move_fists();
@@ -307,9 +313,10 @@ impl GameState {
                 );
 
                 if let Some(d) = distance {
-                    println!("Player Hit! {d}");
+                    //println!("Player Hit! {d}");
                     // The other player is hit
                     is_players_hit[1 - i] = true;
+                    self.num_landed_punches[i] += 1;
                     fist.retract();
                 }
             }
@@ -323,8 +330,14 @@ impl GameState {
         }
 
         // Fist / Fist contact
-        let player_0_fists_pos = self.players[0].fists.clone().map(|f| f.position);
-        let player_1_fists_pos = self.players[1].fists.clone().map(|f| f.position);
+        let player_0_fists_pos = [
+            self.players[0].fists[0].position,
+            self.players[0].fists[1].position,
+        ];
+        let player_1_fists_pos = [
+            self.players[1].fists[0].position,
+            self.players[1].fists[1].position,
+        ];
 
         for (player_0_i, player_0_fist_pos) in player_0_fists_pos.iter().enumerate() {
             for (player_1_i, player_1_fist_pos) in player_1_fists_pos.iter().enumerate() {
@@ -336,7 +349,7 @@ impl GameState {
                 );
 
                 if let Some(d) = distance {
-                    println!("Contact between P0 fist {player_0_i} and P1 fist {player_1_i}");
+                    //println!("Contact between P0 fist {player_0_i} and P1 fist {player_1_i}");
                     if let FistState::Extending { .. } = self.players[0].fists[player_0_i].state {
                         self.players[0].fists[player_0_i].retract();
                     }
@@ -359,7 +372,8 @@ impl GameState {
             for (fist_i, fist) in player.fists.iter_mut().enumerate() {
                 let is_fist_punching = is_fists_punching[fist_i];
                 if fist.state == FistState::Resting && is_fist_punching {
-                    println!("Initiating punch on player {i} and fist {fist_i}");
+                    //println!("Initiating punch on player {i} and fist {fist_i}");
+                    self.num_punches[i] += 1;
                     fist.state = FistState::Extending {
                         target: other_player_pos,
                         speed: Player::PUNCH_SPEED,

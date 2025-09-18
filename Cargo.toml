@@ -7,3 +7,4 @@ edition = "2024"
 burn = {version = "0.18.0", features = ["std", "tui", "train", "wgpu"]}
 macroquad = "0.4.14"
 parry2d = "0.24.0"
+rand = "0.9.2"
