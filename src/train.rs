@@ -122,12 +122,12 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) {
     let mut policy_net0: DQN<B> = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
     let mut policy_net1: DQN<B> = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
 
-    let target_net0 = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
+    let mut target_net0 = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
     let mut replay_buffer0 = ReplayBuffer::new(MEMORY_SIZE);
     let mut steps_done0 = 0;
     let mut all_rewards0: Vec<f32> = vec![];
 
-    let target_net1 = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
+    let mut target_net1 = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
     let mut replay_buffer1 = ReplayBuffer::new(MEMORY_SIZE);
     let mut steps_done1 = 0;
     let mut all_rewards1: Vec<f32> = vec![];
@@ -209,10 +209,10 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) {
             }
 
             if steps_done0 % TARGET_UPDATE == 0 {
-                let target_net0 = policy_net0.clone();
+                target_net0 = policy_net0.clone();
             }
             if steps_done0 % TARGET_UPDATE == 0 {
-                let target_net1 = policy_net1.clone();
+                target_net1 = policy_net1.clone();
             }
 
             is_episode_done = is_done;

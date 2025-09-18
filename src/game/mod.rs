@@ -59,7 +59,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub const STARTING_HEALTH: f32 = 10.0;
+    pub const STARTING_HEALTH: f32 = 5.0;
     pub const RADIUS: f32 = 32.0;
     pub const ACCELERATION: f32 = 2.0;
     pub const DECCELERATION: f32 = 0.75;
