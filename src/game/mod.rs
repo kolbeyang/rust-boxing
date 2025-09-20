@@ -7,6 +7,8 @@ pub use control::*;
 pub mod utils;
 pub use utils::*;
 
+pub const OBSERVATION_LENGTH: usize = 23;
+
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum FistState {
     Resting,
@@ -123,6 +125,7 @@ impl Player {
         self.velocity = new_velocity;
 
         self.position += self.velocity;
+        self.rotation += move_x.to_num() as f32 * 0.05;
 
         let fists_resting_pos = [self.get_fist_resting_pos(0), self.get_fist_resting_pos(1)];
 
@@ -179,9 +182,17 @@ impl Player {
         }
     }
 
-    pub fn rotate_and_face(&mut self, position: Vector<f32>) {
+    // NOTE: match factor is how much to turn in that direction
+    pub fn rotate_and_face(&mut self, position: Vector<f32>, match_factor: f32) {
         let direction_vector = position - self.position;
-        self.rotation = direction_vector.y.atan2(direction_vector.x) + PI / 2.0;
+        let new_rotation = direction_vector.y.atan2(direction_vector.x) + PI / 2.0;
+        let mut delta = new_rotation - self.rotation;
+        if delta > PI {
+            delta -= 2.0 * PI;
+        } else if delta < -PI {
+            delta += 2.0 * PI;
+        }
+        self.rotation += delta * match_factor;
     }
 
     pub fn move_forwand(&mut self, distance: f32) {
@@ -219,7 +230,7 @@ impl Observation {
     const MAX_VELOCITY: f32 = 20.0;
     const MAX_LOCAL_DISTANCE: f32 = 300.0;
 
-    pub fn normalize(&self) -> [f32; 23] {
+    pub fn normalize(&self) -> [f32; OBSERVATION_LENGTH] {
         [
             // Health values (0-1 range)
             self.health / Player::STARTING_HEALTH,
@@ -288,9 +299,13 @@ impl GameState {
     }
 
     pub fn step(&mut self, controls: [Control; 2]) -> StepResult {
+        let mut rewards = [0.0, 0.0];
         let initial_health = [self.players[0].health, self.players[1].health];
 
         for (i, player) in self.players.iter_mut().enumerate() {
+            if controls[i].move_y == MoveY::Back {
+                rewards[i] -= 0.01;
+            }
             player.handle_move(controls[i])
         }
         // Check punch contact
@@ -316,6 +331,7 @@ impl GameState {
                     //println!("Player Hit! {d}");
                     // The other player is hit
                     is_players_hit[1 - i] = true;
+                    rewards[i] += 220.0;
                     self.num_landed_punches[i] += 1;
                     fist.retract();
                 }
@@ -325,7 +341,8 @@ impl GameState {
         // Handle knockback
         for (i, is_player_hit) in is_players_hit.iter().enumerate() {
             if *is_player_hit {
-                self.players[i].get_hit()
+                self.players[i].get_hit();
+                rewards[i] -= 180.0;
             }
         }
 
@@ -351,10 +368,16 @@ impl GameState {
                 if let Some(d) = distance {
                     //println!("Contact between P0 fist {player_0_i} and P1 fist {player_1_i}");
                     if let FistState::Extending { .. } = self.players[0].fists[player_0_i].state {
+                        println!("Punch from player 0 hit fists");
                         self.players[0].fists[player_0_i].retract();
+                        rewards[0] += 0.02;
+                        rewards[1] += 0.01;
                     }
                     if let FistState::Extending { .. } = self.players[1].fists[player_1_i].state {
+                        println!("Punch from player 1 hit fists");
                         self.players[1].fists[player_1_i].retract();
+                        rewards[1] += 0.02;
+                        rewards[0] += 0.01;
                     }
                 }
             }
@@ -368,16 +391,28 @@ impl GameState {
                 ..
             } = controls[i];
             let other_player_pos = players_pos[1 - i];
-            let is_fists_punching = [left_punch, right_punch];
+            let is_fists_start_punching = [left_punch, right_punch];
+            let fists_state = [player.fists[0].state, player.fists[1].state];
             for (fist_i, fist) in player.fists.iter_mut().enumerate() {
-                let is_fist_punching = is_fists_punching[fist_i];
-                if fist.state == FistState::Resting && is_fist_punching {
+                let is_fist_start_punching = is_fists_start_punching[fist_i];
+                let is_other_fist_start_punching = is_fists_start_punching[1 - fist_i];
+                let is_other_fist_punching = fists_state[1 - fist_i] != FistState::Resting;
+                if fist.state == FistState::Resting
+                    && is_fist_start_punching
+                    && !is_other_fist_start_punching
+                    && !is_other_fist_punching
+                {
                     //println!("Initiating punch on player {i} and fist {fist_i}");
                     self.num_punches[i] += 1;
+                    rewards[i] += 0.01;
                     fist.state = FistState::Extending {
                         target: other_player_pos,
                         speed: Player::PUNCH_SPEED,
                     }
+                } else if (is_fist_start_punching) {
+                    // NOTE: punch when not allowed
+                    //println!("Illegal punch input");
+                    rewards[i] -= 0.05;
                 }
             }
         }
@@ -385,7 +420,7 @@ impl GameState {
         // Players should face each other
         for (i, player) in self.players.iter_mut().enumerate() {
             let other_player_pos = players_pos[1 - i];
-            player.rotate_and_face(other_player_pos);
+            player.rotate_and_face(other_player_pos, 0.1);
         }
 
         // Players should drift toward each other
@@ -421,20 +456,20 @@ impl GameState {
         let player_0_observation = self.get_observation(0);
         let player_1_observation = self.get_observation(1);
 
-        let mut player_0_reward = 0.0;
-        let mut player_1_reward = 0.0;
-
-        let player_0_health_delta = self.players[0].health - initial_health[0];
-        let player_1_health_delta = self.players[1].health - initial_health[1];
-
-        player_0_reward += player_0_health_delta - player_1_health_delta;
-        player_1_reward += player_1_health_delta - player_0_health_delta;
-
         let is_done = self.players[0].health <= 0.0 || self.players[1].health <= 0.0;
+
+        //if rewards != [0.0, 0.0] {
+        //    println!(
+        //        "Rewards {:?} actions {} {}",
+        //        rewards,
+        //        controls[0].to_int(),
+        //        controls[1].to_int()
+        //    );
+        //}
 
         StepResult {
             observations: [player_0_observation, player_1_observation],
-            rewards: [player_0_reward, player_1_reward],
+            rewards,
             is_done,
         }
     }

@@ -2,7 +2,6 @@ use burn::module::Module;
 use burn::nn::{Linear, LinearConfig, Relu};
 use burn::prelude::*;
 
-use crate::game::Observation;
 
 #[derive(Module, Debug)]
 pub struct DQN<B: Backend> {

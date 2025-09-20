@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Copy, Clone, Debug)]
 pub enum MoveX {
     Left,
@@ -15,7 +17,7 @@ impl MoveX {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum MoveY {
     Back,
     None,

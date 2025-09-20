@@ -9,7 +9,7 @@ use rand::Rng;
 use crate::{
     game::{Control, GameState, Observation, StepResult},
     model::{DQN, DQNConfig},
-    replay_buffer::{Experience, ReplayBuffer},
+    replay_buffer::{BatchTensors, Experience, ReplayBuffer},
 };
 
 static EPS_START: f32 = 1.0;
@@ -35,7 +35,7 @@ pub fn select_action<B: Backend>(
         let observation = observation.normalize();
         let obs_tensor = Tensor::<B, 1, Float>::from_floats(observation, device).unsqueeze_dim(0);
         let all_qvalues: Tensor<B, 1, Float> = model.forward(obs_tensor).squeeze(0);
-        all_qvalues.max().into_scalar().to_usize()
+        all_qvalues.clone().argmax(0).into_scalar().to_usize()
     }
 }
 
@@ -46,6 +46,7 @@ pub struct TrainingConfig {
     pub batch_size: usize,
     pub learning_rate: f64,
     pub num_episodes: usize,
+    pub max_iters: usize,
 }
 
 pub fn train_step<B: AutodiffBackend>(
@@ -57,33 +58,15 @@ pub fn train_step<B: AutodiffBackend>(
 ) -> DQN<B> {
     let mut policy_net = policy_net;
 
-    let experiences = buffer.sample(config.batch_size);
+    let BatchTensors {
+        states,
+        actions,
+        rewards,
+        next_states,
+        is_dones,
+    } = buffer.sample_batch_tensors::<B>(config.batch_size, device);
 
     let mut optimizer = config.optimizer.init();
-
-    let mut states: Vec<Tensor<B, 1>> = vec![];
-    let mut actions: Vec<i32> = vec![];
-    let mut rewards: Vec<f32> = vec![];
-    let mut next_states: Vec<Tensor<B, 1>> = vec![];
-    let mut is_dones: Vec<bool> = vec![];
-
-    experiences.iter().for_each(|e| {
-        states.push(Tensor::from_floats(e.state.normalize(), device));
-        actions.push(e.action as i32);
-        rewards.push(e.reward);
-        next_states.push(Tensor::from_data(e.next_state.normalize(), device));
-
-        is_dones.push(e.is_done);
-    });
-
-    let states = Tensor::stack(states, 0);
-    let actions_tensor_data = TensorData::new(actions, Shape::new([config.batch_size]));
-    let actions: Tensor<B, 1, Int> = Tensor::from_data(actions_tensor_data, device);
-    let rewards_tensor_data = TensorData::new(rewards, Shape::new([config.batch_size]));
-    let rewards = Tensor::from_data(rewards_tensor_data, device);
-    let next_states = Tensor::stack(next_states, 0);
-    let is_dones_tensor_data = TensorData::new(is_dones, Shape::new([config.batch_size]));
-    let is_dones: Tensor<B, 1, Bool> = Tensor::from_data(is_dones_tensor_data, device);
 
     let q_values = policy_net
         .forward(states)
@@ -116,7 +99,7 @@ static INPUT_SIZE: usize = 23;
 static OUTPUT_SIZE: usize = 24;
 static MEMORY_SIZE: usize = 100_000;
 
-pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) {
+pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> (DQN<B>, DQN<B>) {
     let mut env = GameState::new();
 
     let mut policy_net0: DQN<B> = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
@@ -135,6 +118,8 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) {
     let mut best_avg0 = -1000;
     let mut best_avg1 = -1000;
 
+    let mut iters = 0;
+
     for episode in 0..config.num_episodes {
         println!("Beginning episode {episode}");
         env = GameState::new();
@@ -147,7 +132,6 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) {
 
         let mut is_episode_done = false;
 
-        let mut count = 0;
         while !is_episode_done {
             let epsilon0 = get_epsilon(steps_done0);
             let epsilon1 = get_epsilon(steps_done1);
@@ -217,13 +201,16 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) {
 
             is_episode_done = is_done;
 
-            count += 1;
-
-            if count % 100 == 0 {
+            iters += 1;
+            if iters % 100 == 0 {
                 println!(
-                    "   Running iter {count} Reward 0:{} Reward 1:{} num_punches: {:?} num_landed_punches: {:?}",
+                    "   Running iter {iters } Reward 0:{} Reward 1:{} num_punches: {:?} num_landed_punches: {:?}",
                     total_reward0, total_reward1, env.num_punches, env.num_landed_punches
                 )
+            }
+
+            if iters > config.max_iters {
+                break;
             }
         }
 
@@ -235,4 +222,6 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) {
 
         println!("Finishing episode {episode}");
     }
+
+    (policy_net0, policy_net1)
 }
