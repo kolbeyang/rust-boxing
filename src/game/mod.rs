@@ -20,8 +20,8 @@ impl FistState {
     pub fn to_int(&self) -> usize {
         match self {
             FistState::Resting => 0,
-            FistState::Extending { .. } => 0,
-            FistState::Retracting { .. } => 0,
+            FistState::Extending { .. } => 1,
+            FistState::Retracting { .. } => 2,
         }
     }
 }
@@ -66,7 +66,7 @@ impl Player {
     pub const ACCELERATION: f32 = 2.0;
     pub const DECCELERATION: f32 = 0.75;
     pub const FORWARD_DRIFT_SPEED: f32 = 0.75;
-    pub const KNOCKBACK_ACCELERATION: f32 = 5.0;
+    pub const KNOCKBACK_ACCELERATION: f32 = 8.0;
 
     pub const FIST_RADIUS: f32 = 16.0;
     pub const FIST_DISTANCE: f32 = 52.0;
@@ -125,7 +125,13 @@ impl Player {
         self.velocity = new_velocity;
 
         self.position += self.velocity;
-        self.rotation += move_x.to_num() as f32 * 0.05;
+        self.rotation += move_x.to_num() as f32 * -0.05;
+
+        if self.rotation > PI {
+            self.rotation -= 2.0 * PI;
+        } else if self.rotation < -PI {
+            self.rotation += 2.0 * PI;
+        }
 
         let fists_resting_pos = [self.get_fist_resting_pos(0), self.get_fist_resting_pos(1)];
 
@@ -304,7 +310,7 @@ impl GameState {
 
         for (i, player) in self.players.iter_mut().enumerate() {
             if controls[i].move_y == MoveY::Back {
-                rewards[i] -= 0.01;
+                rewards[i] -= 0.1;
             }
             player.handle_move(controls[i])
         }
@@ -331,7 +337,7 @@ impl GameState {
                     //println!("Player Hit! {d}");
                     // The other player is hit
                     is_players_hit[1 - i] = true;
-                    rewards[i] += 220.0;
+                    rewards[i] += 10.0;
                     self.num_landed_punches[i] += 1;
                     fist.retract();
                 }
@@ -342,7 +348,7 @@ impl GameState {
         for (i, is_player_hit) in is_players_hit.iter().enumerate() {
             if *is_player_hit {
                 self.players[i].get_hit();
-                rewards[i] -= 180.0;
+                rewards[i] -= 9.0;
             }
         }
 
@@ -370,14 +376,14 @@ impl GameState {
                     if let FistState::Extending { .. } = self.players[0].fists[player_0_i].state {
                         println!("Punch from player 0 hit fists");
                         self.players[0].fists[player_0_i].retract();
-                        rewards[0] += 0.02;
-                        rewards[1] += 0.01;
+                        rewards[0] += 0.2;
+                        rewards[1] += 0.1;
                     }
                     if let FistState::Extending { .. } = self.players[1].fists[player_1_i].state {
                         println!("Punch from player 1 hit fists");
                         self.players[1].fists[player_1_i].retract();
-                        rewards[1] += 0.02;
-                        rewards[0] += 0.01;
+                        rewards[1] += 0.2;
+                        rewards[0] += 0.1;
                     }
                 }
             }
@@ -404,7 +410,7 @@ impl GameState {
                 {
                     //println!("Initiating punch on player {i} and fist {fist_i}");
                     self.num_punches[i] += 1;
-                    rewards[i] += 0.01;
+                    rewards[i] += 0.1;
                     fist.state = FistState::Extending {
                         target: other_player_pos,
                         speed: Player::PUNCH_SPEED,
@@ -412,7 +418,7 @@ impl GameState {
                 } else if (is_fist_start_punching) {
                     // NOTE: punch when not allowed
                     //println!("Illegal punch input");
-                    rewards[i] -= 0.05;
+                    rewards[i] -= 0.1;
                 }
             }
         }
@@ -420,7 +426,7 @@ impl GameState {
         // Players should face each other
         for (i, player) in self.players.iter_mut().enumerate() {
             let other_player_pos = players_pos[1 - i];
-            player.rotate_and_face(other_player_pos, 0.1);
+            player.rotate_and_face(other_player_pos, 0.08);
         }
 
         // Players should drift toward each other

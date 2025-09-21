@@ -13,11 +13,11 @@ use crate::{
 };
 
 static EPS_START: f32 = 1.0;
-static EPS_MIN: f32 = 0.05;
-static EPS_DECAY: f32 = 0.995;
+static EPS_MIN: f32 = 0.01;
 
-pub fn get_epsilon(steps_done: usize) -> f32 {
-    EPS_MIN.max(EPS_START * EPS_DECAY.powi(steps_done as i32))
+pub fn get_epsilon(steps_done: usize, decay: f32) -> f32 {
+    //EPS_MIN.max(EPS_START * EPS_DECAY.powi(steps_done as i32))
+    EPS_MIN + (EPS_START - EPS_MIN) * (-decay * steps_done as f32).exp()
 }
 
 pub fn select_action<B: Backend>(
@@ -47,6 +47,7 @@ pub struct TrainingConfig {
     pub learning_rate: f64,
     pub num_episodes: usize,
     pub max_iters: usize,
+    pub epsilon_decay: f32,
 }
 
 pub fn train_step<B: AutodiffBackend>(
@@ -133,11 +134,10 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
         let mut is_episode_done = false;
 
         while !is_episode_done {
-            let epsilon0 = get_epsilon(steps_done0);
-            let epsilon1 = get_epsilon(steps_done1);
+            let epsilon = get_epsilon(steps_done0, config.epsilon_decay);
 
-            let action0 = select_action(p0_obs, &policy_net0, epsilon0, NUM_ACTIONS, device);
-            let action1 = select_action(p1_obs, &policy_net1, epsilon1, NUM_ACTIONS, device);
+            let action0 = select_action(p0_obs, &policy_net0, epsilon, NUM_ACTIONS, device);
+            let action1 = select_action(p1_obs, &policy_net1, epsilon, NUM_ACTIONS, device);
 
             let StepResult {
                 observations,
@@ -204,8 +204,8 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
             iters += 1;
             if iters % 100 == 0 {
                 println!(
-                    "   Running iter {iters } Reward 0:{} Reward 1:{} num_punches: {:?} num_landed_punches: {:?}",
-                    total_reward0, total_reward1, env.num_punches, env.num_landed_punches
+                    "   Running iter {iters } Reward 0:{} Reward 1:{} num_punches: {:?} num_landed_punches: {:?} epsilon {}",
+                    total_reward0, total_reward1, env.num_punches, env.num_landed_punches, epsilon
                 )
             }
 

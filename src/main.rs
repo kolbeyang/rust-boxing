@@ -1,11 +1,8 @@
-#![recursion_limit = "256"] // or higher like "1024"
+#![recursion_limit = "256"]
 
 use std::path::PathBuf;
 
-use boxing::{
-    model::{DQN, DQNConfig},
-    train::{TrainingConfig, train},
-};
+use boxing::train::{TrainingConfig, train};
 use burn::{
     backend::{Autodiff, Wgpu},
     module::Module,
@@ -24,9 +21,10 @@ fn main() {
         optimizer: AdamConfig::new(),
         gamma: 0.99,
         batch_size: 64,
-        learning_rate: 0.001,
+        learning_rate: 0.0001,
         num_episodes: 10,
-        max_iters: 10_000,
+        max_iters: 20_000,
+        epsilon_decay: 0.001,
     };
 
     let device = Default::default();

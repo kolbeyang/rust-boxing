@@ -2,7 +2,6 @@ use burn::module::Module;
 use burn::nn::{Linear, LinearConfig, Relu};
 use burn::prelude::*;
 
-
 #[derive(Module, Debug)]
 pub struct DQN<B: Backend> {
     fc0: Linear<B>,
@@ -21,8 +20,8 @@ pub struct DQNConfig {
 impl DQNConfig {
     pub fn init<B: Backend>(&self, device: &B::Device) -> DQN<B> {
         DQN {
-            fc0: LinearConfig::new(self.input_size, 128).init(device),
-            fc1: LinearConfig::new(128, 128).init(device),
+            fc0: LinearConfig::new(self.input_size, 256).init(device),
+            fc1: LinearConfig::new(256, 128).init(device),
             fc2: LinearConfig::new(128, 64).init(device),
             out: LinearConfig::new(64, self.output_size).init(device),
             activation: Relu::new(),
