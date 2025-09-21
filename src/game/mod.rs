@@ -62,18 +62,18 @@ pub struct Player {
 
 impl Player {
     pub const STARTING_HEALTH: f32 = 10.0;
-    pub const RADIUS: f32 = 32.0;
-    pub const ACCELERATION: f32 = 2.0;
+    pub const RADIUS: f32 = 20.0;
+    pub const ACCELERATION: f32 = 3.0;
     pub const DECCELERATION: f32 = 0.75;
     pub const ATTRACTION_FACTOR: f32 = 2.0;
     pub const REPULSION_FACTOR: f32 = 8.0;
     pub const KNOCKBACK_ACCELERATION: f32 = 8.0;
 
-    pub const FIST_RADIUS: f32 = 16.0;
+    pub const FIST_RADIUS: f32 = 10.0;
     pub const FIST_DISTANCE: f32 = 52.0;
-    pub const FIST_OFFSET_ANGLE: f32 = PI * 0.35; // Radians
+    pub const FIST_OFFSET_ANGLE: f32 = PI * 0.30; // Radians
     pub const REACH: f32 = 100.0;
-    pub const PUNCH_SPEED: f32 = 12.0;
+    pub const PUNCH_SPEED: f32 = 8.0;
 
     pub const ZERO_ANGLE: Vector<f32> = Vector::new(0.0, -1.0); // Up is 0
 
