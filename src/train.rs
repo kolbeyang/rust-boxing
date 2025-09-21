@@ -13,7 +13,7 @@ use crate::{
 };
 
 static EPS_START: f32 = 1.0;
-static EPS_MIN: f32 = 0.01;
+static EPS_MIN: f32 = 0.005;
 
 pub fn get_epsilon(steps_done: usize, decay: f32) -> f32 {
     //EPS_MIN.max(EPS_START * EPS_DECAY.powi(steps_done as i32))
@@ -221,6 +221,10 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
         // TODO: avg1 mean of the last 20 in all_rewards1;
 
         println!("Finishing episode {episode}");
+
+        if iters > config.max_iters {
+            break;
+        }
     }
 
     (policy_net0, policy_net1)

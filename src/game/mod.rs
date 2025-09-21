@@ -1,4 +1,4 @@
-use std::f32::consts::PI;
+use std::{cmp::Ordering, f32::consts::PI};
 
 use parry2d::{math::Vector, na::Rotation2};
 
@@ -61,7 +61,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub const STARTING_HEALTH: f32 = 5.0;
+    pub const STARTING_HEALTH: f32 = 10.0;
     pub const RADIUS: f32 = 32.0;
     pub const ACCELERATION: f32 = 2.0;
     pub const DECCELERATION: f32 = 0.75;
@@ -377,14 +377,14 @@ impl GameState {
                     if let FistState::Extending { .. } = self.players[0].fists[player_0_i].state {
                         //println!("Punch from player 0 hit fists");
                         self.players[0].fists[player_0_i].retract();
-                        rewards[0] += 0.2;
-                        rewards[1] += 0.1;
+                        //rewards[0] += 0.2;
+                        //rewards[1] += 0.1;
                     }
                     if let FistState::Extending { .. } = self.players[1].fists[player_1_i].state {
                         //println!("Punch from player 1 hit fists");
                         self.players[1].fists[player_1_i].retract();
-                        rewards[1] += 0.2;
-                        rewards[0] += 0.1;
+                        //rewards[1] += 0.2;
+                        //rewards[0] += 0.1;
                     }
                 }
             }
@@ -411,7 +411,7 @@ impl GameState {
                 {
                     //println!("Initiating punch on player {i} and fist {fist_i}");
                     self.num_punches[i] += 1;
-                    rewards[i] += 0.1;
+                    //rewards[i] += 0.1;
                     fist.state = FistState::Extending {
                         target: other_player_pos,
                         speed: Player::PUNCH_SPEED,
@@ -419,7 +419,7 @@ impl GameState {
                 } else if (is_fist_start_punching) {
                     // NOTE: punch when not allowed
                     //println!("Illegal punch input");
-                    rewards[i] -= 0.1;
+                    //rewards[i] -= 0.1;
                 }
             }
         }
@@ -432,14 +432,14 @@ impl GameState {
 
         // Players should drift toward the center
         let center: Vector<f32> = GameState::RING_SIZE / 2.0;
-        let dead_zone: f32 = 0.2; // proportion of the ring where center drift doesn't apply
+        let dead_zone: f32 = 0.3; // proportion of the ring where center drift doesn't apply
 
         for (i, player) in self.players.iter_mut().enumerate() {
             let difference = (center - player.position);
             let direction = difference.normalize();
-            let magnitude = (difference.magnitude() / GameState::RING_SIZE.x - 0.3).max(0.0);
+            let magnitude = (difference.magnitude() / GameState::RING_SIZE.x - dead_zone).max(0.0);
 
-            player.position += direction * magnitude * 15.0;
+            player.position += direction * magnitude * 40.0;
         }
 
         // Players should drift toward each other
@@ -488,6 +488,18 @@ impl GameState {
         let player_1_observation = self.get_observation(1);
 
         let is_done = self.players[0].health <= 0.0 || self.players[1].health <= 0.0;
+
+        let winner = match self.players[0].health.partial_cmp(&self.players[1].health) {
+            Some(Ordering::Less) => Some(1),
+            Some(Ordering::Equal) => None,
+            Some(Ordering::Greater) => Some(0),
+            None => None,
+        };
+
+        if is_done && let Some(win_i) = winner {
+            // NOTE: winner reward
+            rewards[win_i] += 50.0;
+        }
 
         //if rewards != [0.0, 0.0] {
         //    println!(

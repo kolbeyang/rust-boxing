@@ -22,9 +22,9 @@ fn main() {
         gamma: 0.99,
         batch_size: 64,
         learning_rate: 0.0001,
-        num_episodes: 10,
-        max_iters: 20_000,
-        epsilon_decay: 0.001,
+        num_episodes: 20_000,
+        max_iters: 40_000,
+        epsilon_decay: 0.0005,
     };
 
     let device = Default::default();
