@@ -65,7 +65,8 @@ impl Player {
     pub const RADIUS: f32 = 32.0;
     pub const ACCELERATION: f32 = 2.0;
     pub const DECCELERATION: f32 = 0.75;
-    pub const FORWARD_DRIFT_SPEED: f32 = 0.75;
+    pub const ATTRACTION_FACTOR: f32 = 2.0;
+    pub const REPULSION_FACTOR: f32 = 8.0;
     pub const KNOCKBACK_ACCELERATION: f32 = 8.0;
 
     pub const FIST_RADIUS: f32 = 16.0;
@@ -291,7 +292,7 @@ pub struct GameState {
 
 impl GameState {
     pub const RING_SIZE: Vector<f32> = Vector::new(400.0, 400.0);
-    pub const MIN_PLAYER_DISTANCE: f32 = 120.0;
+    pub const MIN_PLAYER_DISTANCE: f32 = 56.0;
 
     pub fn new() -> Self {
         let player_0 = Player::new(Vector::new(200.0, 100.0), PI); // On top, facing down
@@ -374,13 +375,13 @@ impl GameState {
                 if let Some(d) = distance {
                     //println!("Contact between P0 fist {player_0_i} and P1 fist {player_1_i}");
                     if let FistState::Extending { .. } = self.players[0].fists[player_0_i].state {
-                        println!("Punch from player 0 hit fists");
+                        //println!("Punch from player 0 hit fists");
                         self.players[0].fists[player_0_i].retract();
                         rewards[0] += 0.2;
                         rewards[1] += 0.1;
                     }
                     if let FistState::Extending { .. } = self.players[1].fists[player_1_i].state {
-                        println!("Punch from player 1 hit fists");
+                        //println!("Punch from player 1 hit fists");
                         self.players[1].fists[player_1_i].retract();
                         rewards[1] += 0.2;
                         rewards[0] += 0.1;
@@ -429,13 +430,37 @@ impl GameState {
             player.rotate_and_face(other_player_pos, 0.08);
         }
 
+        // Players should drift toward the center
+        let center: Vector<f32> = GameState::RING_SIZE / 2.0;
+        let dead_zone: f32 = 0.2; // proportion of the ring where center drift doesn't apply
+
+        for (i, player) in self.players.iter_mut().enumerate() {
+            let difference = (center - player.position);
+            let direction = difference.normalize();
+            let magnitude = (difference.magnitude() / GameState::RING_SIZE.x - 0.3).max(0.0);
+
+            player.position += direction * magnitude * 15.0;
+        }
+
         // Players should drift toward each other
-        let player_distance = (players_pos[1] - players_pos[0]).magnitude();
-        let gap_left = player_distance - GameState::MIN_PLAYER_DISTANCE;
-        let delta =
-            (gap_left / 2.0).clamp(-Player::FORWARD_DRIFT_SPEED, Player::FORWARD_DRIFT_SPEED);
-        for player in self.players.iter_mut() {
-            player.move_forwand(delta);
+        let player_distance = (players_pos[1] - players_pos[0]).magnitude() - Player::RADIUS * 2.0;
+
+        let delta = match player_distance < GameState::MIN_PLAYER_DISTANCE {
+            true => {
+                (player_distance / GameState::MIN_PLAYER_DISTANCE).log2() * Player::REPULSION_FACTOR
+            }
+            false => {
+                (player_distance / GameState::MIN_PLAYER_DISTANCE).log2()
+                    * Player::ATTRACTION_FACTOR
+            }
+        };
+
+        let players_pos = [self.players[0].position, self.players[1].position];
+        for (i, player) in self.players.iter_mut().enumerate() {
+            let other_player_pos = players_pos[1 - i];
+            let delta_vector = (other_player_pos - player.position).normalize() * delta;
+
+            player.position += delta_vector;
         }
 
         // Check wall boundaries
