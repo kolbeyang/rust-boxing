@@ -58,7 +58,7 @@ async fn main() {
         let action0 = select_action(obs0, &model0, epsilon, n_actions, &device);
         let action1 = select_action(obs1, &model1, epsilon, n_actions, &device);
 
-        println!("Action {} {}", action0, action1);
+        //println!("Action {} {}", action0, action1);
 
         // Convert actions to controls
         let controls = [

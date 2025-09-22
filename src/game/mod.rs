@@ -169,7 +169,7 @@ impl Player {
                     fist.position += delta;
 
                     if (fist.position - self.position).magnitude() > Player::REACH {
-                        //println!("Fist {i} retracting");
+                        //println!("Fist {i} retracting because of maximum reach");
                         fist.state = FistState::Retracting {
                             speed: Player::PUNCH_SPEED,
                         };
@@ -335,7 +335,7 @@ impl GameState {
                 );
 
                 if let Some(d) = distance {
-                    //println!("Player Hit! {d}");
+                    //println!("Player Hit! {d} fist retracting");
                     // The other player is hit
                     is_players_hit[1 - i] = true;
                     rewards[i] += 10.0;
@@ -375,13 +375,13 @@ impl GameState {
                 if let Some(d) = distance {
                     //println!("Contact between P0 fist {player_0_i} and P1 fist {player_1_i}");
                     if let FistState::Extending { .. } = self.players[0].fists[player_0_i].state {
-                        //println!("Punch from player 0 hit fists");
+                        //println!("Punch from player 0 hit fists, retracting");
                         self.players[0].fists[player_0_i].retract();
                         //rewards[0] += 0.2;
                         //rewards[1] += 0.1;
                     }
                     if let FistState::Extending { .. } = self.players[1].fists[player_1_i].state {
-                        //println!("Punch from player 1 hit fists");
+                        //println!("Punch from player 1 hit fists, retracting");
                         self.players[1].fists[player_1_i].retract();
                         //rewards[1] += 0.2;
                         //rewards[0] += 0.1;
