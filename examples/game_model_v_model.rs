@@ -1,3 +1,4 @@
+use ::rand::{Rng, SeedableRng, rng, rngs::StdRng};
 use std::path::PathBuf;
 
 use boxing::game::{Control, GameState, Player};
@@ -43,8 +44,10 @@ async fn main() {
     let target_fps = 24.0;
     let frame_time = 1.0 / target_fps;
 
+    let mut rng = rng();
+
     // Epsilon for action selection (0 for greedy play)
-    let epsilon = 0.08;
+    let epsilon = 0.005;
     let n_actions = 24;
 
     loop {
@@ -55,8 +58,8 @@ async fn main() {
         let obs1 = game_state.get_observation(1);
 
         // Select actions using the models
-        let action0 = select_action(obs0, &model0, epsilon, n_actions, &device);
-        let action1 = select_action(obs1, &model1, epsilon, n_actions, &device);
+        let action0 = select_action(obs0, &model0, epsilon, n_actions, &mut rng, &device);
+        let action1 = select_action(obs1, &model1, epsilon, n_actions, &mut rng, &device);
 
         //println!("Action {} {}", action0, action1);
 
@@ -203,6 +206,45 @@ fn draw_game(game_state: &GameState) {
         draw_rectangle_lines(
             health_x,
             health_y,
+            health_bar_width,
+            health_bar_height,
+            2.0,
+            WHITE,
+        );
+
+        // Draw energy bar (right under health bar)
+        let energy_y = health_y + health_bar_height + 5.0; // 5 pixels gap
+
+        // Background
+        draw_rectangle(
+            health_x,
+            energy_y,
+            health_bar_width,
+            health_bar_height,
+            DARKGRAY,
+        );
+
+        // Energy
+        let energy_ratio = player.energy / Player::MAX_ENERGY;
+        let energy_color = if energy_ratio > 0.6 {
+            SKYBLUE
+        } else if energy_ratio > 0.3 {
+            GOLD
+        } else {
+            ORANGE
+        };
+        draw_rectangle(
+            health_x,
+            energy_y,
+            health_bar_width * energy_ratio,
+            health_bar_height,
+            energy_color,
+        );
+
+        // Border
+        draw_rectangle_lines(
+            health_x,
+            energy_y,
             health_bar_width,
             health_bar_height,
             2.0,

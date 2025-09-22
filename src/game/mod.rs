@@ -7,7 +7,7 @@ pub use control::*;
 pub mod utils;
 pub use utils::*;
 
-pub const OBSERVATION_LENGTH: usize = 23;
+pub const OBSERVATION_LENGTH: usize = 25;
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum FistState {
@@ -42,12 +42,12 @@ impl Fist {
 
     pub fn retract(&mut self) {
         self.state = FistState::Retracting {
-            speed: Player::PUNCH_SPEED,
+            speed: Player::MIN_PUNCH_SPEED,
         };
         // Move to avoid double contact
         let target = self.position;
         let direction = target - self.position;
-        let delta = direction * Player::PUNCH_SPEED;
+        let delta = direction * Player::MAX_PUNCH_SPEED;
         self.position += delta;
     }
 }
@@ -64,7 +64,7 @@ pub struct Player {
 impl Player {
     pub const STARTING_HEALTH: f32 = 10.0;
     pub const MAX_ENERGY: f32 = 10.0;
-    pub const ENERGY_REGEN: f32 = 1.0 / 24.0;
+    pub const ENERGY_REGEN: f32 = 0.5 * 1.0 / 24.0;
     pub const RADIUS: f32 = 26.0;
     pub const ACCELERATION: f32 = 3.0;
     pub const DECCELERATION: f32 = 0.80;
@@ -75,8 +75,10 @@ impl Player {
     pub const FIST_RADIUS: f32 = 16.0;
     pub const FIST_DISTANCE: f32 = 64.0;
     pub const FIST_OFFSET_ANGLE: f32 = PI * 0.25; // Radians
-    pub const REACH: f32 = 100.0;
-    pub const PUNCH_SPEED: f32 = 10.0;
+    pub const MIN_REACH: f32 = 95.0;
+    pub const MAX_REACH: f32 = 105.0;
+    pub const MIN_PUNCH_SPEED: f32 = 8.0;
+    pub const MAX_PUNCH_SPEED: f32 = 12.0;
 
     pub const ZERO_ANGLE: Vector<f32> = Vector::new(0.0, -1.0); // Up is 0
 
@@ -159,8 +161,19 @@ impl Player {
         self.health -= 1.0;
     }
 
+    pub fn get_punch_speed(&self) -> f32 {
+        let percentage = self.energy / Player::MAX_PUNCH_SPEED;
+        (Player::MAX_PUNCH_SPEED - Player::MIN_PUNCH_SPEED) * percentage + Player::MIN_PUNCH_SPEED
+    }
+
+    pub fn get_reach(&self) -> f32 {
+        let percentage = self.energy / Player::MAX_REACH;
+        (Player::MAX_REACH - Player::MIN_REACH) * percentage + Player::MIN_REACH
+    }
+
     pub fn handle_move_fists(&mut self) {
         let fists_resting_pos = [self.get_fist_resting_pos(0), self.get_fist_resting_pos(1)];
+        let reach = self.get_reach();
 
         for (i, fist) in self.fists.iter_mut().enumerate() {
             match fist.state {
@@ -172,11 +185,9 @@ impl Player {
                     let delta = direction * speed;
                     fist.position += delta;
 
-                    if (fist.position - self.position).magnitude() > Player::REACH {
+                    if (fist.position - self.position).magnitude() > reach {
                         //println!("Fist {i} retracting because of maximum reach");
-                        fist.state = FistState::Retracting {
-                            speed: Player::PUNCH_SPEED,
-                        };
+                        fist.retract();
                     }
                 }
                 FistState::Retracting { speed } => {
@@ -184,7 +195,8 @@ impl Player {
                     let delta = direction * speed;
                     fist.position += delta;
 
-                    if (fist.position - fists_resting_pos[i]).magnitude() < Player::PUNCH_SPEED {
+                    if (fist.position - fists_resting_pos[i]).magnitude() < Player::MAX_PUNCH_SPEED
+                    {
                         //println!("Fist {i} ended punch");
                         fist.state = FistState::Resting;
                     }
@@ -249,6 +261,9 @@ impl Observation {
             // Health values (0-1 range)
             self.health / Player::STARTING_HEALTH,
             self.op_health / Player::STARTING_HEALTH,
+            // Energy values (0-1 range)
+            self.energy / Player::MAX_ENERGY,
+            self.op_energy / Player::MAX_ENERGY,
             // World coordinates (0-1 range)
             self.position[0] / GameState::RING_SIZE.x,
             self.position[1] / GameState::RING_SIZE.y,
@@ -407,6 +422,7 @@ impl GameState {
             let other_player_pos = players_pos[1 - i];
             let is_fists_start_punching = [left_punch, right_punch];
             let fists_state = [player.fists[0].state, player.fists[1].state];
+            let punch_speed = player.get_punch_speed();
             for (fist_i, fist) in player.fists.iter_mut().enumerate() {
                 let is_fist_start_punching = is_fists_start_punching[fist_i];
                 let is_other_fist_start_punching = is_fists_start_punching[1 - fist_i];
@@ -423,7 +439,7 @@ impl GameState {
                     //rewards[i] += 0.1;
                     fist.state = FistState::Extending {
                         target: other_player_pos,
-                        speed: Player::PUNCH_SPEED,
+                        speed: punch_speed,
                     }
                 } else if (is_fist_start_punching) {
                     // NOTE: punch when not allowed
@@ -494,8 +510,14 @@ impl GameState {
         }
 
         // Increment energy
-        self.players[0].energy += Player::ENERGY_REGEN.clamp(0.0, Player::MAX_ENERGY);
-        self.players[1].energy += Player::ENERGY_REGEN.clamp(0.0, Player::MAX_ENERGY);
+        self.players[0].energy =
+            (self.players[0].energy + Player::ENERGY_REGEN).clamp(0.0, Player::MAX_ENERGY);
+        self.players[1].energy =
+            (self.players[1].energy + Player::ENERGY_REGEN).clamp(0.0, Player::MAX_ENERGY);
+
+        // Punish doing nothing
+        rewards[0] -= 0.001;
+        rewards[1] -= 0.001;
 
         let player_0_observation = self.get_observation(0);
         let player_1_observation = self.get_observation(1);
@@ -513,15 +535,6 @@ impl GameState {
             // NOTE: winner reward
             rewards[win_i] += 50.0;
         }
-
-        //if rewards != [0.0, 0.0] {
-        //    println!(
-        //        "Rewards {:?} actions {} {}",
-        //        rewards,
-        //        controls[0].to_int(),
-        //        controls[1].to_int()
-        //    );
-        //}
 
         StepResult {
             observations: [player_0_observation, player_1_observation],

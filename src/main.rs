@@ -23,8 +23,9 @@ fn main() {
         batch_size: 128,
         learning_rate: 0.0001,
         num_episodes: 20_000,
-        max_iters: 10_000,
+        max_iters: 30_000,
         epsilon_decay: 0.0005,
+        seed: 24,
     };
 
     let device = Default::default();

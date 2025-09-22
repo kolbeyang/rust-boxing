@@ -204,6 +204,45 @@ fn draw_game(game_state: &GameState) {
             WHITE,
         );
 
+        // Draw energy bar (right under health bar)
+        let energy_y = health_y + health_bar_height + 5.0; // 5 pixels gap
+
+        // Background
+        draw_rectangle(
+            health_x,
+            energy_y,
+            health_bar_width,
+            health_bar_height,
+            DARKGRAY,
+        );
+
+        // Energy
+        let energy_ratio = player.energy / Player::MAX_ENERGY;
+        let energy_color = if energy_ratio > 0.6 {
+            SKYBLUE
+        } else if energy_ratio > 0.3 {
+            GOLD
+        } else {
+            ORANGE
+        };
+        draw_rectangle(
+            health_x,
+            energy_y,
+            health_bar_width * energy_ratio,
+            health_bar_height,
+            energy_color,
+        );
+
+        // Border
+        draw_rectangle_lines(
+            health_x,
+            energy_y,
+            health_bar_width,
+            health_bar_height,
+            2.0,
+            WHITE,
+        );
+
         // Player label
         let label = format!("Player {}", i + 1);
         draw_text(&label, health_x, health_y - 5.0, 20.0, WHITE);

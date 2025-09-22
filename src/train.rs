@@ -4,10 +4,10 @@ use burn::{
     prelude::*,
     tensor::{backend::AutodiffBackend, cast::ToElement},
 };
-use rand::Rng;
+use rand::{Rng, SeedableRng, rngs::StdRng};
 
 use crate::{
-    game::{Control, GameState, Observation, StepResult},
+    game::{Control, GameState, OBSERVATION_LENGTH, Observation, StepResult},
     model::{DQN, DQNConfig},
     replay_buffer::{BatchTensors, Experience, ReplayBuffer},
 };
@@ -20,14 +20,14 @@ pub fn get_epsilon(steps_done: usize, decay: f32) -> f32 {
     EPS_MIN + (EPS_START - EPS_MIN) * (-decay * steps_done as f32).exp()
 }
 
-pub fn select_action<B: Backend>(
+pub fn select_action<B: Backend, R: Rng>(
     observation: Observation,
     model: &DQN<B>,
     epsilon: f32,
     n_actions: usize,
+    rng: &mut R,
     device: &B::Device,
 ) -> usize {
-    let mut rng = rand::rng();
     let random: f32 = rng.random();
     if random < epsilon {
         return rng.random_range(0..n_actions);
@@ -48,6 +48,7 @@ pub struct TrainingConfig {
     pub num_episodes: usize,
     pub max_iters: usize,
     pub epsilon_decay: f32,
+    pub seed: u64,
 }
 
 pub fn train_step<B: AutodiffBackend>(
@@ -96,22 +97,22 @@ pub fn train_step<B: AutodiffBackend>(
 static NUM_ACTIONS: usize = 24; // TODO: this probably shouldn't be written right here
 static TRAIN_START: usize = 200;
 static TARGET_UPDATE: usize = 250;
-static INPUT_SIZE: usize = 23;
 static OUTPUT_SIZE: usize = 24;
 static MEMORY_SIZE: usize = 100_000;
 
 pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> (DQN<B>, DQN<B>) {
     let mut env = GameState::new();
+    let mut rng = StdRng::seed_from_u64(config.seed);
 
-    let mut policy_net0: DQN<B> = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
-    let mut policy_net1: DQN<B> = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
+    let mut policy_net0: DQN<B> = DQNConfig::new(OBSERVATION_LENGTH, OUTPUT_SIZE).init(device);
+    let mut policy_net1: DQN<B> = DQNConfig::new(OBSERVATION_LENGTH, OUTPUT_SIZE).init(device);
 
-    let mut target_net0 = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
+    let mut target_net0 = DQNConfig::new(OBSERVATION_LENGTH, OUTPUT_SIZE).init(device);
     let mut replay_buffer0 = ReplayBuffer::new(MEMORY_SIZE);
     let mut steps_done0 = 0;
     let mut all_rewards0: Vec<f32> = vec![];
 
-    let mut target_net1 = DQNConfig::new(INPUT_SIZE, OUTPUT_SIZE).init(device);
+    let mut target_net1 = DQNConfig::new(OBSERVATION_LENGTH, OUTPUT_SIZE).init(device);
     let mut replay_buffer1 = ReplayBuffer::new(MEMORY_SIZE);
     let mut steps_done1 = 0;
     let mut all_rewards1: Vec<f32> = vec![];
@@ -136,8 +137,10 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
         while !is_episode_done {
             let epsilon = get_epsilon(steps_done0, config.epsilon_decay);
 
-            let action0 = select_action(p0_obs, &policy_net0, epsilon, NUM_ACTIONS, device);
-            let action1 = select_action(p1_obs, &policy_net1, epsilon, NUM_ACTIONS, device);
+            let action0 =
+                select_action(p0_obs, &policy_net0, epsilon, NUM_ACTIONS, &mut rng, device);
+            let action1 =
+                select_action(p1_obs, &policy_net1, epsilon, NUM_ACTIONS, &mut rng, device);
 
             let StepResult {
                 observations,
