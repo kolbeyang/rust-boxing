@@ -44,7 +44,7 @@ async fn main() {
     let frame_time = 1.0 / target_fps;
 
     // Epsilon for action selection (0 for greedy play)
-    let epsilon = 0.0;
+    let epsilon = 0.08;
     let n_actions = 24;
 
     loop {
@@ -230,4 +230,3 @@ fn draw_game(game_state: &GameState) {
         WHITE,
     );
 }
-

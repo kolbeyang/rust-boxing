@@ -62,18 +62,18 @@ pub struct Player {
 
 impl Player {
     pub const STARTING_HEALTH: f32 = 10.0;
-    pub const RADIUS: f32 = 20.0;
+    pub const RADIUS: f32 = 26.0;
     pub const ACCELERATION: f32 = 3.0;
-    pub const DECCELERATION: f32 = 0.75;
+    pub const DECCELERATION: f32 = 0.80;
     pub const ATTRACTION_FACTOR: f32 = 2.0;
     pub const REPULSION_FACTOR: f32 = 8.0;
     pub const KNOCKBACK_ACCELERATION: f32 = 8.0;
 
-    pub const FIST_RADIUS: f32 = 10.0;
-    pub const FIST_DISTANCE: f32 = 52.0;
-    pub const FIST_OFFSET_ANGLE: f32 = PI * 0.30; // Radians
+    pub const FIST_RADIUS: f32 = 16.0;
+    pub const FIST_DISTANCE: f32 = 64.0;
+    pub const FIST_OFFSET_ANGLE: f32 = PI * 0.25; // Radians
     pub const REACH: f32 = 100.0;
-    pub const PUNCH_SPEED: f32 = 8.0;
+    pub const PUNCH_SPEED: f32 = 10.0;
 
     pub const ZERO_ANGLE: Vector<f32> = Vector::new(0.0, -1.0); // Up is 0
 
@@ -126,7 +126,7 @@ impl Player {
         self.velocity = new_velocity;
 
         self.position += self.velocity;
-        self.rotation += move_x.to_num() as f32 * -0.05;
+        self.rotation += move_x.to_num() as f32 * 0.03;
 
         if self.rotation > PI {
             self.rotation -= 2.0 * PI;
@@ -292,7 +292,7 @@ pub struct GameState {
 
 impl GameState {
     pub const RING_SIZE: Vector<f32> = Vector::new(400.0, 400.0);
-    pub const MIN_PLAYER_DISTANCE: f32 = 56.0;
+    pub const MIN_PLAYER_DISTANCE: f32 = 88.0;
 
     pub fn new() -> Self {
         let player_0 = Player::new(Vector::new(200.0, 100.0), PI); // On top, facing down
