@@ -64,6 +64,7 @@ pub struct Player {
 impl Player {
     pub const STARTING_HEALTH: f32 = 10.0;
     pub const MAX_ENERGY: f32 = 10.0;
+    pub const STARTING_ENERGY: f32 = 7.0;
     pub const ENERGY_REGEN: f32 = 0.5 * 1.0 / 24.0;
     pub const RADIUS: f32 = 26.0;
     pub const ACCELERATION: f32 = 3.0;
@@ -74,9 +75,10 @@ impl Player {
 
     pub const FIST_RADIUS: f32 = 16.0;
     pub const FIST_DISTANCE: f32 = 64.0;
-    pub const FIST_OFFSET_ANGLE: f32 = PI * 0.25; // Radians
+    pub const MIN_FIST_OFFSET_ANGLE: f32 = PI * 0.25; // Radians
+    pub const MAX_FIST_OFFSET_ANGLE: f32 = PI * 0.30; // Radians
     pub const MIN_REACH: f32 = 95.0;
-    pub const MAX_REACH: f32 = 105.0;
+    pub const MAX_REACH: f32 = 110.0;
     pub const MIN_PUNCH_SPEED: f32 = 8.0;
     pub const MAX_PUNCH_SPEED: f32 = 12.0;
 
@@ -88,7 +90,7 @@ impl Player {
             rotation,
             velocity: Vector::new(0.0, 0.0),
             health: Player::STARTING_HEALTH,
-            energy: Player::MAX_ENERGY,
+            energy: Player::STARTING_ENERGY,
             fists: [
                 Fist::new(Vector::new(0.0, 0.0)),
                 Fist::new(Vector::new(0.0, 0.0)),
@@ -105,8 +107,8 @@ impl Player {
 
     pub fn get_fist_resting_pos(&self, fist_index: usize) -> Vector<f32> {
         let fist_offset_angle = match fist_index {
-            0 => -Player::FIST_OFFSET_ANGLE, // left
-            1 => Player::FIST_OFFSET_ANGLE,  // right
+            0 => -self.get_fist_offset_angle(), // left
+            1 => self.get_fist_offset_angle(),  // right
             _ => 0.0,
         };
         let angle = self.rotation + fist_offset_angle;
@@ -159,6 +161,12 @@ impl Player {
         self.velocity = new_velocity;
         self.position += self.velocity;
         self.health -= 1.0;
+    }
+
+    pub fn get_fist_offset_angle(&self) -> f32 {
+        let percentage = 1.0 - self.energy / Player::MAX_ENERGY;
+        (Player::MAX_FIST_OFFSET_ANGLE - Player::MIN_FIST_OFFSET_ANGLE) * percentage
+            + Player::MIN_FIST_OFFSET_ANGLE
     }
 
     pub fn get_punch_speed(&self) -> f32 {
