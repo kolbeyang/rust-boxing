@@ -58,10 +58,13 @@ pub struct Player {
     pub velocity: Vector<f32>,
     pub fists: [Fist; 2],
     pub health: f32,
+    pub energy: f32,
 }
 
 impl Player {
     pub const STARTING_HEALTH: f32 = 10.0;
+    pub const MAX_ENERGY: f32 = 10.0;
+    pub const ENERGY_REGEN: f32 = 1.0 / 24.0;
     pub const RADIUS: f32 = 26.0;
     pub const ACCELERATION: f32 = 3.0;
     pub const DECCELERATION: f32 = 0.80;
@@ -83,6 +86,7 @@ impl Player {
             rotation,
             velocity: Vector::new(0.0, 0.0),
             health: Player::STARTING_HEALTH,
+            energy: Player::MAX_ENERGY,
             fists: [
                 Fist::new(Vector::new(0.0, 0.0)),
                 Fist::new(Vector::new(0.0, 0.0)),
@@ -214,6 +218,9 @@ impl Player {
 pub struct Observation {
     pub health: f32,
     pub op_health: f32,
+
+    pub energy: f32,
+    pub op_energy: f32,
 
     // These are the only two in world coordinates
     pub position: [f32; 2],
@@ -408,9 +415,11 @@ impl GameState {
                     && is_fist_start_punching
                     && !is_other_fist_start_punching
                     && !is_other_fist_punching
+                    && player.energy > 1.0
                 {
                     //println!("Initiating punch on player {i} and fist {fist_i}");
                     self.num_punches[i] += 1;
+                    player.energy -= 1.0;
                     //rewards[i] += 0.1;
                     fist.state = FistState::Extending {
                         target: other_player_pos,
@@ -484,6 +493,10 @@ impl GameState {
             }
         }
 
+        // Increment energy
+        self.players[0].energy += Player::ENERGY_REGEN.clamp(0.0, Player::MAX_ENERGY);
+        self.players[1].energy += Player::ENERGY_REGEN.clamp(0.0, Player::MAX_ENERGY);
+
         let player_0_observation = self.get_observation(0);
         let player_1_observation = self.get_observation(1);
 
@@ -544,6 +557,9 @@ impl GameState {
         Observation {
             health: player.health,
             op_health: opponent.health,
+
+            energy: player.health,
+            op_energy: opponent.health,
 
             // World coordinates (as requested)
             position: [player.position.x, player.position.y],
