@@ -342,7 +342,6 @@ impl GameState {
                             let distance_percentage =
                                 (distance_from_op / Player::MAX_REACH).clamp(0.0, 1.0);
 
-                            // Reward anything under a 10 percent distance_percentage
                             let mut reward = 8.0 * (1.0 - distance_percentage).powi(4);
                             // Reward high energy states
                             let energy_percentage = player.energy / Player::MAX_ENERGY;

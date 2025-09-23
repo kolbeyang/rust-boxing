@@ -31,7 +31,7 @@ fn main() {
         max_iters: 20_000,
         epsilon_decay: 0.0001,
         iters_per_training_step: 4,
-        seed: 45,
+        seed: 24,
     };
 
     let device = Default::default();
