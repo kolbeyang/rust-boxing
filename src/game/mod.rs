@@ -74,11 +74,11 @@ impl Player {
     pub const KNOCKBACK_ACCELERATION: f32 = 8.0;
 
     pub const FIST_RADIUS: f32 = 15.0;
-    pub const FIST_DISTANCE: f32 = 64.0;
+    pub const FIST_DISTANCE: f32 = 56.0;
     pub const MIN_FIST_OFFSET_ANGLE: f32 = PI * 0.25; // Radians
-    pub const MAX_FIST_OFFSET_ANGLE: f32 = PI * 0.30; // Radians
+    pub const MAX_FIST_OFFSET_ANGLE: f32 = PI * 0.35; // Radians
     pub const MIN_REACH: f32 = 100.0;
-    pub const MAX_REACH: f32 = 120.0;
+    pub const MAX_REACH: f32 = 140.0;
     pub const MIN_PUNCH_SPEED: f32 = 8.0;
     pub const MAX_PUNCH_SPEED: f32 = 14.0;
     pub const PUNCH_RETRACT_SPEED: f32 = 14.0;
@@ -473,7 +473,7 @@ impl GameState {
             let direction = difference.normalize();
             let magnitude = (difference.magnitude() / GameState::RING_SIZE.x - dead_zone).max(0.0);
 
-            player.position += direction * magnitude * 40.0;
+            player.position += direction * magnitude * 50.0;
         }
 
         // Players should drift toward each other
