@@ -3,6 +3,7 @@ use std::{cmp::Ordering, f32::consts::PI};
 use parry2d::{math::Vector, na::Rotation2};
 
 pub mod control;
+pub mod model;
 pub use control::*;
 pub mod utils;
 pub use utils::*;

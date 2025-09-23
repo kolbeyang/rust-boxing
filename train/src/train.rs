@@ -1,4 +1,10 @@
+use core::{
+    Control, GameState, OBSERVATION_LENGTH, Observation, StepResult,
+    model::{DQN, DQNConfig},
+};
+
 use burn::{
+    config::Config,
     nn::loss::{MseLoss, Reduction},
     optim::{AdamConfig, GradientsParams, Optimizer},
     prelude::*,
@@ -6,11 +12,7 @@ use burn::{
 };
 use rand::{Rng, SeedableRng, rngs::StdRng};
 
-use crate::{
-    game::{Control, GameState, OBSERVATION_LENGTH, Observation, StepResult},
-    model::{DQN, DQNConfig},
-    replay_buffer::{BatchTensors, Experience, ReplayBuffer},
-};
+use crate::replay_buffer::{BatchTensors, Experience, ReplayBuffer};
 
 static EPS_START: f32 = 1.0;
 static EPS_MIN: f32 = 0.005;
@@ -39,7 +41,6 @@ pub fn select_action<B: Backend, R: Rng>(
     }
 }
 
-#[derive(Config)]
 pub struct TrainingConfig {
     pub optimizer: AdamConfig,
     pub gamma: f32,

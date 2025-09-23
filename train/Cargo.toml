@@ -1,0 +1,11 @@
+[package]
+name = "train"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+core = { path = "../core" }
+macroquad = "0.4.14"
+burn = {version = "0.18.0", features = ["std", "tui", "train", "wgpu" ]}
+parry2d = "0.24.0"
+rand = "0.9.2"

@@ -2,13 +2,18 @@
 
 use std::path::PathBuf;
 
-use boxing::train::{TrainingConfig, train};
+pub mod replay_buffer;
+pub mod train;
+use crate::train::train;
+
 use burn::{
     backend::{Autodiff, Wgpu},
     module::Module,
     optim::AdamConfig,
     record::{FullPrecisionSettings, NamedMpkFileRecorder},
 };
+
+use crate::train::TrainingConfig;
 
 fn main() {
     // TODO: remove
@@ -34,9 +39,9 @@ fn main() {
     let (dqn0, dqn1) = train::<MyAutodiffBackend>(&device, config);
 
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
-    dqn0.save_file(PathBuf::from("./dqn0"), &recorder)
+    dqn0.save_file(PathBuf::from("./assets/models/dqn0"), &recorder)
         .expect("Should save");
-    dqn1.save_file(PathBuf::from("./dqn1"), &recorder)
+    dqn1.save_file(PathBuf::from("./assets/models/dqn1"), &recorder)
         .expect("Should save");
 
     println!("Total time: {:?}", start.elapsed());

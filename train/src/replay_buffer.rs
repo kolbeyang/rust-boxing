@@ -1,10 +1,10 @@
+use core::{OBSERVATION_LENGTH, Observation};
+
 use burn::{
     prelude::Backend,
     tensor::{Bool, Float, Int, Shape, Tensor, TensorData},
 };
 use rand::{rngs::ThreadRng, seq::IndexedRandom};
-
-use crate::game::{OBSERVATION_LENGTH, Observation};
 
 #[derive(Clone, Debug)]
 pub struct Experience {
