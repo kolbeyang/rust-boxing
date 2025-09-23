@@ -25,6 +25,7 @@ fn main() {
         num_episodes: 20_000,
         max_iters: 30_000,
         epsilon_decay: 0.0005,
+        iters_per_training_step: 8,
         seed: 24,
     };
 

@@ -49,6 +49,7 @@ pub struct TrainingConfig {
     pub max_iters: usize,
     pub epsilon_decay: f32,
     pub seed: u64,
+    pub iters_per_training_step: usize,
 }
 
 pub fn train_step<B: AutodiffBackend>(
@@ -176,7 +177,7 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
             steps_done0 += 1;
             steps_done1 += 1;
 
-            if steps_done0 > TRAIN_START {
+            if steps_done0 > TRAIN_START && steps_done0 % config.iters_per_training_step == 0 {
                 policy_net0 = train_step(
                     policy_net0,
                     &target_net0,
@@ -185,7 +186,7 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
                     &config,
                 );
             }
-            if steps_done1 > TRAIN_START {
+            if steps_done1 > TRAIN_START && steps_done1 % config.iters_per_training_step == 0 {
                 policy_net1 = train_step(
                     policy_net1,
                     &target_net1,
@@ -205,7 +206,7 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
             is_episode_done = is_done;
 
             iters += 1;
-            if iters % 100 == 0 {
+            if iters % 1000 == 0 {
                 println!(
                     "   Running iter {iters } Reward 0:{} Reward 1:{} num_punches: {:?} num_landed_punches: {:?} epsilon {}",
                     total_reward0, total_reward1, env.num_punches, env.num_landed_punches, epsilon

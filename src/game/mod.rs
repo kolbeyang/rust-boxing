@@ -42,7 +42,7 @@ impl Fist {
 
     pub fn retract(&mut self) {
         self.state = FistState::Retracting {
-            speed: Player::MIN_PUNCH_SPEED,
+            speed: Player::PUNCH_RETRACT_SPEED,
         };
         // Move to avoid double contact
         let target = self.position;
@@ -73,14 +73,15 @@ impl Player {
     pub const REPULSION_FACTOR: f32 = 8.0;
     pub const KNOCKBACK_ACCELERATION: f32 = 8.0;
 
-    pub const FIST_RADIUS: f32 = 16.0;
+    pub const FIST_RADIUS: f32 = 15.0;
     pub const FIST_DISTANCE: f32 = 64.0;
     pub const MIN_FIST_OFFSET_ANGLE: f32 = PI * 0.25; // Radians
     pub const MAX_FIST_OFFSET_ANGLE: f32 = PI * 0.30; // Radians
-    pub const MIN_REACH: f32 = 95.0;
-    pub const MAX_REACH: f32 = 110.0;
+    pub const MIN_REACH: f32 = 100.0;
+    pub const MAX_REACH: f32 = 120.0;
     pub const MIN_PUNCH_SPEED: f32 = 8.0;
-    pub const MAX_PUNCH_SPEED: f32 = 12.0;
+    pub const MAX_PUNCH_SPEED: f32 = 14.0;
+    pub const PUNCH_RETRACT_SPEED: f32 = 14.0;
 
     pub const ZERO_ANGLE: Vector<f32> = Vector::new(0.0, -1.0); // Up is 0
 
@@ -379,7 +380,7 @@ impl GameState {
         for (i, is_player_hit) in is_players_hit.iter().enumerate() {
             if *is_player_hit {
                 self.players[i].get_hit();
-                rewards[i] -= 9.0;
+                rewards[i] -= 6.0;
             }
         }
 
@@ -579,8 +580,8 @@ impl GameState {
             health: player.health,
             op_health: opponent.health,
 
-            energy: player.health,
-            op_energy: opponent.health,
+            energy: player.energy,
+            op_energy: opponent.energy,
 
             // World coordinates (as requested)
             position: [player.position.x, player.position.y],
