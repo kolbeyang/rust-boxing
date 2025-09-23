@@ -19,14 +19,14 @@ fn main() {
 
     let config = TrainingConfig {
         optimizer: AdamConfig::new(),
-        gamma: 0.995,
+        gamma: 0.999,
         batch_size: 128,
         learning_rate: 0.0001,
         num_episodes: 20_000,
-        max_iters: 50_000,
-        epsilon_decay: 0.0005,
+        max_iters: 20_000,
+        epsilon_decay: 0.0001,
         iters_per_training_step: 4,
-        seed: 23,
+        seed: 45,
     };
 
     let device = Default::default();

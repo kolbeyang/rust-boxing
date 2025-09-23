@@ -62,7 +62,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub const STARTING_HEALTH: f32 = 10.0;
+    pub const STARTING_HEALTH: f32 = 5.0;
     pub const MAX_ENERGY: f32 = 10.0;
     pub const STARTING_ENERGY: f32 = 7.0;
     pub const ENERGY_REGEN: f32 = 0.5 * 1.0 / 24.0;
@@ -493,7 +493,7 @@ impl GameState {
             let direction = difference.normalize();
             let magnitude = (difference.magnitude() / GameState::RING_SIZE.x - dead_zone).max(0.0);
 
-            player.position += direction * magnitude * 50.0;
+            player.position += direction * magnitude * 100.0;
         }
 
         // Players should drift toward each other
