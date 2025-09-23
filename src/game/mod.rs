@@ -76,7 +76,7 @@ impl Player {
     pub const FIST_RADIUS: f32 = 15.0;
     pub const FIST_DISTANCE: f32 = 56.0;
     pub const MIN_FIST_OFFSET_ANGLE: f32 = PI * 0.25; // Radians
-    pub const MAX_FIST_OFFSET_ANGLE: f32 = PI * 0.35; // Radians
+    pub const MAX_FIST_OFFSET_ANGLE: f32 = PI * 0.30; // Radians
     pub const MIN_REACH: f32 = 100.0;
     pub const MAX_REACH: f32 = 140.0;
     pub const MIN_PUNCH_SPEED: f32 = 8.0;
@@ -178,40 +178,6 @@ impl Player {
     pub fn get_reach(&self) -> f32 {
         let percentage = self.energy / Player::MAX_REACH;
         (Player::MAX_REACH - Player::MIN_REACH) * percentage + Player::MIN_REACH
-    }
-
-    pub fn handle_move_fists(&mut self) {
-        let fists_resting_pos = [self.get_fist_resting_pos(0), self.get_fist_resting_pos(1)];
-        let reach = self.get_reach();
-
-        for (i, fist) in self.fists.iter_mut().enumerate() {
-            match fist.state {
-                FistState::Resting => {
-                    fist.position = fists_resting_pos[i];
-                }
-                FistState::Extending { target, speed } => {
-                    let direction = (target - fist.position).normalize();
-                    let delta = direction * speed;
-                    fist.position += delta;
-
-                    if (fist.position - self.position).magnitude() > reach {
-                        //println!("Fist {i} retracting because of maximum reach");
-                        fist.retract();
-                    }
-                }
-                FistState::Retracting { speed } => {
-                    let direction = (fists_resting_pos[i] - fist.position).normalize();
-                    let delta = direction * speed;
-                    fist.position += delta;
-
-                    if (fist.position - fists_resting_pos[i]).magnitude() < Player::MAX_PUNCH_SPEED
-                    {
-                        //println!("Fist {i} ended punch");
-                        fist.state = FistState::Resting;
-                    }
-                }
-            }
-        }
     }
 
     // NOTE: match factor is how much to turn in that direction
@@ -338,7 +304,6 @@ impl GameState {
 
     pub fn step(&mut self, controls: [Control; 2]) -> StepResult {
         let mut rewards = [0.0, 0.0];
-        let initial_health = [self.players[0].health, self.players[1].health];
 
         for (i, player) in self.players.iter_mut().enumerate() {
             if controls[i].move_y == MoveY::Back {
@@ -349,8 +314,62 @@ impl GameState {
         // Check punch contact
         let players_pos = [self.players[0].position, self.players[1].position];
 
-        for player in self.players.iter_mut() {
-            player.handle_move_fists();
+        for (i, player) in self.players.iter_mut().enumerate() {
+            let op_position = players_pos[1 - i];
+            let fists_resting_pos = [
+                player.get_fist_resting_pos(0),
+                player.get_fist_resting_pos(1),
+            ];
+            let reach = player.get_reach();
+
+            for (i, fist) in player.fists.iter_mut().enumerate() {
+                match fist.state {
+                    FistState::Resting => {
+                        fist.position = fists_resting_pos[i];
+                    }
+                    FistState::Extending { target, speed } => {
+                        let direction = (target - fist.position).normalize();
+                        let delta = direction * speed;
+                        fist.position += delta;
+
+                        if (fist.position - player.position).magnitude() > reach {
+                            // Reward near misses
+                            let distance_from_op = (op_position - fist.position).magnitude()
+                                - Player::RADIUS
+                                - Player::FIST_RADIUS;
+
+                            let distance_percentage =
+                                (distance_from_op / Player::MAX_REACH).clamp(0.0, 1.0);
+
+                            // Reward anything under a 10 percent distance_percentage
+                            let mut reward = 3.0 * (1.0 - distance_percentage).powi(4);
+                            // Reward high energy states
+                            let energy_percentage = player.energy / Player::MAX_ENERGY;
+                            reward *= (energy_percentage * 0.5) + 0.5;
+
+                            rewards[i] += reward;
+
+                            //println!(
+                            //    "Fist {i} retracting because of maximum reach distance from op {distance_from_op} distance_ratio {distance_percentage} energy_percentage {energy_percentage} reward {reward} "
+                            //);
+
+                            fist.retract();
+                        }
+                    }
+                    FistState::Retracting { speed } => {
+                        let direction = (fists_resting_pos[i] - fist.position).normalize();
+                        let delta = direction * speed;
+                        fist.position += delta;
+
+                        if (fist.position - fists_resting_pos[i]).magnitude()
+                            < Player::MAX_PUNCH_SPEED
+                        {
+                            //println!("Fist {i} ended punch");
+                            fist.state = FistState::Resting;
+                        }
+                    }
+                }
+            }
         }
 
         // Fist / Player contact
@@ -365,11 +384,12 @@ impl GameState {
                     Player::RADIUS,
                 );
 
-                if let Some(d) = distance {
+                if distance.is_some() {
                     //println!("Player Hit! {d} fist retracting");
                     // The other player is hit
                     is_players_hit[1 - i] = true;
                     rewards[i] += 10.0;
+
                     self.num_landed_punches[i] += 1;
                     fist.retract();
                 }
@@ -403,7 +423,7 @@ impl GameState {
                     Player::FIST_RADIUS,
                 );
 
-                if let Some(d) = distance {
+                if distance.is_some() {
                     //println!("Contact between P0 fist {player_0_i} and P1 fist {player_1_i}");
                     if let FistState::Extending { .. } = self.players[0].fists[player_0_i].state {
                         //println!("Punch from player 0 hit fists, retracting");
@@ -450,7 +470,7 @@ impl GameState {
                         target: other_player_pos,
                         speed: punch_speed,
                     }
-                } else if (is_fist_start_punching) {
+                } else if is_fist_start_punching {
                     // NOTE: punch when not allowed
                     //println!("Illegal punch input");
                     //rewards[i] -= 0.1;
@@ -468,8 +488,8 @@ impl GameState {
         let center: Vector<f32> = GameState::RING_SIZE / 2.0;
         let dead_zone: f32 = 0.3; // proportion of the ring where center drift doesn't apply
 
-        for (i, player) in self.players.iter_mut().enumerate() {
-            let difference = (center - player.position);
+        for player in self.players.iter_mut() {
+            let difference = center - player.position;
             let direction = difference.normalize();
             let magnitude = (difference.magnitude() / GameState::RING_SIZE.x - dead_zone).max(0.0);
 
