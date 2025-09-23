@@ -342,10 +342,10 @@ impl GameState {
                                 (distance_from_op / Player::MAX_REACH).clamp(0.0, 1.0);
 
                             // Reward anything under a 10 percent distance_percentage
-                            let mut reward = 3.0 * (1.0 - distance_percentage).powi(4);
+                            let mut reward = 8.0 * (1.0 - distance_percentage).powi(4);
                             // Reward high energy states
                             let energy_percentage = player.energy / Player::MAX_ENERGY;
-                            reward *= (energy_percentage * 0.5) + 0.5;
+                            reward *= (energy_percentage * 0.8) + 0.2;
 
                             rewards[i] += reward;
 
@@ -544,9 +544,11 @@ impl GameState {
         self.players[1].energy =
             (self.players[1].energy + Player::ENERGY_REGEN).clamp(0.0, Player::MAX_ENERGY);
 
-        // Punish doing nothing
-        rewards[0] -= 0.001;
-        rewards[1] -= 0.001;
+        // Reward higher energy states
+        for (i, player) in self.players.iter().enumerate() {
+            let energy_percentage = player.energy / Player::MAX_ENERGY;
+            rewards[i] += energy_percentage * 0.0001;
+        }
 
         let player_0_observation = self.get_observation(0);
         let player_1_observation = self.get_observation(1);

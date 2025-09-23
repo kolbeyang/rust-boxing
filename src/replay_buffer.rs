@@ -2,7 +2,7 @@ use burn::{
     prelude::Backend,
     tensor::{Bool, Float, Int, Shape, Tensor, TensorData},
 };
-use rand::seq::IndexedRandom;
+use rand::{rngs::ThreadRng, seq::IndexedRandom};
 
 use crate::game::{OBSERVATION_LENGTH, Observation};
 
@@ -28,6 +28,7 @@ pub struct ReplayBuffer {
     position: usize,
     size: usize,
     buffer: Vec<Experience>,
+    rng: ThreadRng,
 }
 
 impl ReplayBuffer {
@@ -37,6 +38,7 @@ impl ReplayBuffer {
             buffer: Vec::with_capacity(capacity),
             position: 0,
             size: 0,
+            rng: rand::rng(),
         }
     }
     pub fn push(&mut self, experience: Experience) {
@@ -51,18 +53,17 @@ impl ReplayBuffer {
     }
 
     pub fn sample_batch_tensors<B: Backend>(
-        &self,
+        &mut self,
         batch_size: usize,
         device: &B::Device,
     ) -> BatchTensors<B> {
-        let mut rng = rand::rng();
         let mut states: Vec<f32> = Vec::with_capacity(batch_size * OBSERVATION_LENGTH); // Flattened
         let mut actions: Vec<i32> = Vec::with_capacity(batch_size);
         let mut rewards: Vec<f32> = Vec::with_capacity(batch_size);
         let mut next_states: Vec<f32> = Vec::with_capacity(batch_size * OBSERVATION_LENGTH); // Flattened
         let mut is_dones: Vec<bool> = Vec::with_capacity(batch_size);
 
-        for experience in self.buffer.choose_multiple(&mut rng, batch_size) {
+        for experience in self.buffer.choose_multiple(&mut self.rng, batch_size) {
             states.extend_from_slice(&experience.state.normalize());
             actions.push(experience.action as i32);
             rewards.push(experience.reward);
