@@ -1,9 +1,9 @@
-use ::rand::{Rng, SeedableRng, rng, rngs::StdRng};
+use ::rand::{Rng, rng};
+use core::model::{DQN, DQNConfig};
+use core::{Control, GameState, Player};
 use std::path::PathBuf;
+use train::train::select_action;
 
-use boxing::game::{Control, GameState, Player};
-use boxing::model::{DQN, DQNConfig};
-use boxing::train::select_action;
 use burn::record::Recorder;
 use burn::{
     backend::Wgpu,
@@ -30,13 +30,13 @@ async fn main() {
 
     // Load model 0
     let record0 = NamedMpkFileRecorder::<FullPrecisionSettings>::new()
-        .load(PathBuf::from("./dqn0.mpk"), &device)
+        .load(PathBuf::from("./assets/models/dqn0.mpk"), &device)
         .expect("Should be able to load model 0 weights");
     let model0: DQN<MyBackend> = DQNConfig::new(23, 24).init(&device).load_record(record0);
 
     // Load model 1
     let record1 = NamedMpkFileRecorder::<FullPrecisionSettings>::new()
-        .load(PathBuf::from("./dqn1.mpk"), &device)
+        .load(PathBuf::from("./assets/models/dqn1.mpk"), &device)
         .expect("Should be able to load model 0 weights");
     let model1: DQN<MyBackend> = DQNConfig::new(23, 24).init(&device).load_record(record1);
 

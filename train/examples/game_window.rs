@@ -1,4 +1,5 @@
-use boxing::game::{Control, GameState, MoveX, MoveY, Player};
+use core::{Control, GameState, MoveX, MoveY, Player};
+
 use macroquad::prelude::*;
 
 fn window_conf() -> Conf {
