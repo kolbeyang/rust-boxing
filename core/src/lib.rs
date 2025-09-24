@@ -66,7 +66,7 @@ impl Player {
     pub const STARTING_HEALTH: f32 = 5.0;
     pub const MAX_ENERGY: f32 = 10.0;
     pub const STARTING_ENERGY: f32 = 7.0;
-    pub const ENERGY_REGEN: f32 = 0.5 * 1.0 / 24.0;
+    pub const ENERGY_REGEN: f32 = 0.75 / 24.0;
     pub const RADIUS: f32 = 26.0;
     pub const ACCELERATION: f32 = 3.0;
     pub const DECCELERATION: f32 = 0.80;
@@ -377,14 +377,12 @@ impl GameState {
         for (i, player) in self.players.iter_mut().enumerate() {
             let other_player_pos = players_pos[1 - i];
             for fist in player.fists.iter_mut() {
-                let distance = get_contact_distance(
+                if get_is_contact(
                     fist.position,
                     Player::FIST_RADIUS,
                     other_player_pos,
                     Player::RADIUS,
-                );
-
-                if distance.is_some() {
+                ) {
                     //println!("Player Hit! {d} fist retracting");
                     // The other player is hit
                     is_players_hit[1 - i] = true;
@@ -416,14 +414,12 @@ impl GameState {
 
         for (player_0_i, player_0_fist_pos) in player_0_fists_pos.iter().enumerate() {
             for (player_1_i, player_1_fist_pos) in player_1_fists_pos.iter().enumerate() {
-                let distance = get_contact_distance(
+                if get_is_contact(
                     *player_0_fist_pos,
                     Player::FIST_RADIUS,
                     *player_1_fist_pos,
                     Player::FIST_RADIUS,
-                );
-
-                if distance.is_some() {
+                ) {
                     //println!("Contact between P0 fist {player_0_i} and P1 fist {player_1_i}");
                     if let FistState::Extending { .. } = self.players[0].fists[player_0_i].state {
                         //println!("Punch from player 0 hit fists, retracting");

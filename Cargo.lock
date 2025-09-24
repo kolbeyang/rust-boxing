@@ -915,6 +915,7 @@ name = "core"
 version = "0.1.0"
 dependencies = [
  "burn",
+ "getrandom 0.3.3",
  "parry2d",
  "rand 0.9.2",
 ]
@@ -2228,9 +2229,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26145e563e54f2cadc477553f1ec5ee650b00862f0a58bcd12cbdc5f0ea2d2f4"
 dependencies = [
  "cfg-if",
+ "js-sys",
  "libc",
  "r-efi",
  "wasi 0.14.7+wasi-0.2.4",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -5742,7 +5745,12 @@ dependencies = [
 name = "web"
 version = "0.1.0"
 dependencies = [
+ "burn",
  "core",
+ "getrandom 0.3.3",
+ "parry2d",
+ "rand 0.9.2",
+ "wasm-bindgen",
 ]
 
 [[package]]

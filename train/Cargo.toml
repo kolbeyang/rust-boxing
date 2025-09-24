@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-core = { path = "../core" }
+core = { path = "../core" , features=["native"]}
 macroquad = "0.4.14"
 burn = {version = "0.18.0", features = ["std", "tui", "train", "wgpu" ]}
 parry2d = "0.24.0"

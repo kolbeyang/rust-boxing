@@ -144,6 +144,14 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
             let action1 =
                 select_action(p1_obs, &policy_net1, epsilon, NUM_ACTIONS, &mut rng, device);
 
+            // Roughly every 20 seconds
+            let should_add_random_energy = rng.random_range(0..512) == 0;
+            if should_add_random_energy {
+                let benefitting_player = rng.random_range(0..=1);
+                let amount = rng.random_range(0..=3);
+                env.players[benefitting_player].energy += amount as f32;
+            }
+
             let StepResult {
                 observations,
                 rewards,

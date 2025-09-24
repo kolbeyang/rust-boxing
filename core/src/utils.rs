@@ -20,3 +20,11 @@ pub fn get_contact_distance(
 
     penetrating.unwrap_or(None).map(|p| p.dist)
 }
+pub fn get_is_contact(
+    a_pos: Vector<f32>,
+    a_radius: f32,
+    b_pos: Vector<f32>,
+    b_radius: f32,
+) -> bool {
+    (b_pos - a_pos).magnitude() - a_radius - b_radius < 0.0
+}
