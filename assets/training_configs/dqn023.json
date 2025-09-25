@@ -1,0 +1,10 @@
+{
+  "gamma": 0.999,
+  "batch_size": 128,
+  "learning_rate": 0.0001,
+  "num_episodes": 25000,
+  "max_iters": 20000,
+  "epsilon_decay": 0.0002,
+  "seed": 99,
+  "iters_per_training_step": 4
+}

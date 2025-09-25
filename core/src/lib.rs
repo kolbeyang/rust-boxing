@@ -66,7 +66,7 @@ impl Player {
     pub const STARTING_HEALTH: f32 = 5.0;
     pub const MAX_ENERGY: f32 = 10.0;
     pub const STARTING_ENERGY: f32 = 7.0;
-    pub const ENERGY_REGEN: f32 = 0.75 / 24.0;
+    pub const ENERGY_REGEN: f32 = 1.75 / 24.0;
     pub const RADIUS: f32 = 26.0;
     pub const ACCELERATION: f32 = 3.0;
     pub const DECCELERATION: f32 = 0.80;

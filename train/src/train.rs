@@ -4,7 +4,6 @@ use core::{
 };
 
 use burn::{
-    config::Config,
     nn::loss::{MseLoss, Reduction},
     optim::{AdamConfig, GradientsParams, Optimizer},
     prelude::*,
@@ -14,12 +13,11 @@ use rand::{Rng, SeedableRng, rngs::StdRng};
 
 use crate::replay_buffer::{BatchTensors, Experience, ReplayBuffer};
 
-static EPS_START: f32 = 1.0;
 static EPS_MIN: f32 = 0.005;
 
-pub fn get_epsilon(steps_done: usize, decay: f32) -> f32 {
+pub fn get_epsilon(steps_done: usize, epsilon_start: f32, decay: f32) -> f32 {
     //EPS_MIN.max(EPS_START * EPS_DECAY.powi(steps_done as i32))
-    EPS_MIN + (EPS_START - EPS_MIN) * (-decay * steps_done as f32).exp()
+    EPS_MIN + (epsilon_start - EPS_MIN) * (-decay * steps_done as f32).exp()
 }
 
 pub fn select_action<B: Backend, R: Rng>(
@@ -41,7 +39,9 @@ pub fn select_action<B: Backend, R: Rng>(
     }
 }
 
+#[derive(serde::Serialize)]
 pub struct TrainingConfig {
+    #[serde(skip)]
     pub optimizer: AdamConfig,
     pub gamma: f32,
     pub batch_size: usize,
@@ -49,6 +49,7 @@ pub struct TrainingConfig {
     pub num_episodes: usize,
     pub max_iters: usize,
     pub epsilon_decay: f32,
+    pub epsilon_start: f32,
     pub seed: u64,
     pub iters_per_training_step: usize,
 }
@@ -102,7 +103,7 @@ static TARGET_UPDATE: usize = 250;
 static OUTPUT_SIZE: usize = 24;
 static MEMORY_SIZE: usize = 100_000;
 
-pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> (DQN<B>, DQN<B>) {
+pub fn train<B: AutodiffBackend>(device: &B::Device, config: &TrainingConfig) -> (DQN<B>, DQN<B>) {
     let mut env = GameState::new();
     let mut rng = StdRng::seed_from_u64(config.seed);
 
@@ -112,15 +113,10 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
     let mut target_net0 = DQNConfig::new(OBSERVATION_LENGTH, OUTPUT_SIZE).init(device);
     let mut replay_buffer0 = ReplayBuffer::new(MEMORY_SIZE);
     let mut steps_done0 = 0;
-    let mut all_rewards0: Vec<f32> = vec![];
 
     let mut target_net1 = DQNConfig::new(OBSERVATION_LENGTH, OUTPUT_SIZE).init(device);
     let mut replay_buffer1 = ReplayBuffer::new(MEMORY_SIZE);
     let mut steps_done1 = 0;
-    let mut all_rewards1: Vec<f32> = vec![];
-
-    let mut best_avg0 = -1000;
-    let mut best_avg1 = -1000;
 
     let mut iters = 0;
 
@@ -137,20 +133,12 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
         let mut is_episode_done = false;
 
         while !is_episode_done {
-            let epsilon = get_epsilon(steps_done0, config.epsilon_decay);
+            let epsilon = get_epsilon(steps_done0, config.epsilon_start, config.epsilon_decay);
 
             let action0 =
                 select_action(p0_obs, &policy_net0, epsilon, NUM_ACTIONS, &mut rng, device);
             let action1 =
                 select_action(p1_obs, &policy_net1, epsilon, NUM_ACTIONS, &mut rng, device);
-
-            // Roughly every 20 seconds
-            let should_add_random_energy = rng.random_range(0..512) == 0;
-            if should_add_random_energy {
-                let benefitting_player = rng.random_range(0..=1);
-                let amount = rng.random_range(0..=3);
-                env.players[benefitting_player].energy += amount as f32;
-            }
 
             let StepResult {
                 observations,
@@ -208,16 +196,22 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
             if steps_done0 % TARGET_UPDATE == 0 {
                 target_net0 = policy_net0.clone();
             }
-            if steps_done0 % TARGET_UPDATE == 0 {
+            if steps_done1 % TARGET_UPDATE == 0 {
                 target_net1 = policy_net1.clone();
             }
 
             is_episode_done = is_done;
+            if is_episode_done {
+                println!(
+                    "->> Episode finished with final health 0:{} 1:{}",
+                    env.players[0].health, env.players[1].health,
+                );
+            }
 
             iters += 1;
             if iters % 1000 == 0 {
                 println!(
-                    "   Running iter {iters } Reward 0:{} Reward 1:{} num_punches: {:?} num_landed_punches: {:?} epsilon {}",
+                    "   Running iter {iters } Reward 0:{:.2} Reward 1:{:.2} num_punches: {:?} num_landed_punches: {:?} epsilon {}",
                     total_reward0, total_reward1, env.num_punches, env.num_landed_punches, epsilon
                 )
             }
@@ -227,12 +221,6 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
             }
         }
 
-        all_rewards0.push(total_reward0);
-        all_rewards1.push(total_reward1);
-
-        // TODO: avg0 mean of the last 20 in all_rewards0;
-        // TODO: avg1 mean of the last 20 in all_rewards1;
-
         println!("Finishing episode {episode}");
 
         if iters > config.max_iters {
@@ -241,4 +229,121 @@ pub fn train<B: AutodiffBackend>(device: &B::Device, config: TrainingConfig) -> 
     }
 
     (policy_net0, policy_net1)
+}
+
+pub fn train_against<B: AutodiffBackend>(
+    student_net: DQN<B>,
+    teacher_nets: Vec<DQN<B>>,
+    device: &B::Device,
+    config: &TrainingConfig,
+) -> DQN<B> {
+    let mut env = GameState::new();
+    let mut rng = StdRng::seed_from_u64(config.seed);
+
+    let mut student_net = student_net.clone();
+
+    let mut target_net = DQNConfig::new(OBSERVATION_LENGTH, OUTPUT_SIZE).init(device);
+    let mut replay_buffer = ReplayBuffer::new(MEMORY_SIZE);
+    let mut steps_done = 0;
+
+    let mut iters = 0;
+
+    for episode in 0..config.num_episodes {
+        let teacher_index = rng.random_range(0..teacher_nets.len());
+        let teacher_net = &teacher_nets[teacher_index];
+        println!("Beginning episode {episode} against teacher index {teacher_index}");
+        env = GameState::new();
+
+        let mut p0_obs = env.get_observation(0);
+        let mut p1_obs = env.get_observation(1);
+
+        let mut total_reward0 = 0.0;
+        let mut total_reward1 = 0.0;
+
+        let mut is_episode_done = false;
+
+        while !is_episode_done {
+            let epsilon = get_epsilon(steps_done, config.epsilon_start, config.epsilon_decay);
+
+            let action0 =
+                select_action(p0_obs, &student_net, epsilon, NUM_ACTIONS, &mut rng, device);
+            let action1 = select_action(p1_obs, &teacher_net, 0.05, NUM_ACTIONS, &mut rng, device);
+
+            let StepResult {
+                observations,
+                rewards,
+                is_done,
+            } = env.step([Control::from_int(action0), Control::from_int(action1)]);
+
+            let p0_obs_next = observations[0];
+            let p1_obs_next = observations[1];
+
+            replay_buffer.push(Experience {
+                state: p0_obs,
+                action: action0,
+                reward: rewards[0],
+                next_state: p0_obs_next,
+                is_done,
+            });
+
+            // Push student and teacher experiences to the student
+            replay_buffer.push(Experience {
+                state: p1_obs,
+                action: action1,
+                reward: rewards[1],
+                next_state: p1_obs_next,
+                is_done,
+            });
+
+            total_reward0 += rewards[0];
+            total_reward1 += rewards[1];
+
+            p0_obs = p0_obs_next;
+            p1_obs = p1_obs_next;
+
+            steps_done += 1;
+
+            if steps_done > TRAIN_START && steps_done % config.iters_per_training_step == 0 {
+                student_net = train_step(
+                    student_net,
+                    &target_net,
+                    &mut replay_buffer,
+                    device,
+                    &config,
+                );
+            }
+
+            if steps_done % TARGET_UPDATE == 0 {
+                target_net = student_net.clone();
+            }
+
+            is_episode_done = is_done;
+            if is_episode_done {
+                println!(
+                    "->> Episode finished with final health 0:{} 1:{}",
+                    env.players[0].health, env.players[1].health,
+                );
+            }
+
+            iters += 1;
+            if iters % 1000 == 0 {
+                println!(
+                    "   Running iter {iters } Reward 0:{:.2} Reward 1:{:.2} num_punches: {:?} num_landed_punches: {:?} epsilon {}",
+                    total_reward0, total_reward1, env.num_punches, env.num_landed_punches, epsilon
+                )
+            }
+
+            if iters > config.max_iters {
+                break;
+            }
+        }
+
+        println!("Finishing episode {episode}");
+
+        if iters > config.max_iters {
+            break;
+        }
+    }
+
+    student_net
 }

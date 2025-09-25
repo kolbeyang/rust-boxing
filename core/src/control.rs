@@ -1,4 +1,3 @@
-use std::fmt::Display;
 
 #[derive(Copy, Clone, Debug)]
 pub enum MoveX {

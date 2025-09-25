@@ -9,3 +9,5 @@ macroquad = "0.4.14"
 burn = {version = "0.18.0", features = ["std", "tui", "train", "wgpu" ]}
 parry2d = "0.24.0"
 rand = "0.9.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

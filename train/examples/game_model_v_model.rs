@@ -30,13 +30,13 @@ async fn main() {
 
     // Load model 0
     let record0 = NamedMpkFileRecorder::<FullPrecisionSettings>::new()
-        .load(PathBuf::from("./assets/models/dqn0.mpk"), &device)
+        .load(PathBuf::from("./assets/models/dqn11.mpk"), &device)
         .expect("Should be able to load model 0 weights");
     let model0: DQN<MyBackend> = DQNConfig::new(23, 24).init(&device).load_record(record0);
 
     // Load model 1
     let record1 = NamedMpkFileRecorder::<FullPrecisionSettings>::new()
-        .load(PathBuf::from("./assets/models/dqn1.mpk"), &device)
+        .load(PathBuf::from("./assets/models/dqn54.mpk"), &device)
         .expect("Should be able to load model 0 weights");
     let model1: DQN<MyBackend> = DQNConfig::new(23, 24).init(&device).load_record(record1);
 
