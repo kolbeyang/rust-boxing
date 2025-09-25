@@ -1,4 +1,4 @@
-use ::rand::{Rng, rng};
+use ::rand::rng;
 use core::model::{DQN, DQNConfig};
 use core::{Control, GameState, Player};
 use std::path::PathBuf;

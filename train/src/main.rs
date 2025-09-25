@@ -107,7 +107,7 @@ fn load_model<B: Backend>(
 }
 
 fn main() {
-    let mut config = TrainingConfig {
+    let config = TrainingConfig {
         optimizer: AdamConfig::new(),
         gamma: 0.999,
         batch_size: 128,
