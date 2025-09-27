@@ -1,6 +1,9 @@
 #![recursion_limit = "256"]
 
-use core::model::{DQN, DQNConfig};
+use core::{
+    OBSERVATION_LENGTH,
+    model::{DQN, DQNConfig},
+};
 use std::path::PathBuf;
 
 pub mod replay_buffer;
@@ -35,7 +38,7 @@ fn train_2(model_name0: &str, model_name1: &str, config: &TrainingConfig) {
     )
     .expect("Should save");
     dqn1.save_file(
-        PathBuf::from(format!("./assets/models/{}", model_name1)),
+        PathBuf::from(format!("./assets/models/{model_name1}")),
         &recorder,
     )
     .expect("Should save");
@@ -43,12 +46,12 @@ fn train_2(model_name0: &str, model_name1: &str, config: &TrainingConfig) {
     // Save training configs
     let config_json = serde_json::to_string_pretty(&config).expect("Should serialize config");
     std::fs::write(
-        PathBuf::from(format!("./assets/training_configs/{}.json", model_name0)),
+        PathBuf::from(format!("./assets/training_configs/{model_name0}.json")),
         &config_json,
     )
     .expect("Should save config");
     std::fs::write(
-        PathBuf::from(format!("./assets/training_configs/{}.json", model_name1)),
+        PathBuf::from(format!("./assets/training_configs/{model_name1}.json")),
         &config_json,
     )
     .expect("Should save config");
@@ -111,12 +114,12 @@ fn main() {
         optimizer: AdamConfig::new(),
         gamma: 0.999,
         batch_size: 128,
-        learning_rate: 0.0002,
+        learning_rate: 0.0001,
         num_episodes: 20000,
-        max_iters: 20000,
-        epsilon_decay: 0.0007,
-        epsilon_start: 0.05,
-        seed: 456,
+        max_iters: 200_000,
+        epsilon_decay: 0.0001,
+        epsilon_start: 1.0,
+        seed: 26,
         iters_per_training_step: 8,
     };
 
@@ -125,7 +128,8 @@ fn main() {
 
     let device: Device<MyAutodiffBackend> = Default::default();
 
-    let student_index = 64;
+    //let student_net: DQN<MyAutodiffBackend> = DQNConfig::new(OBSERVATION_LENGTH, 24).init(&device);
+    let student_index = 74;
     let student_net: DQN<MyAutodiffBackend> = load_model(
         &PathBuf::from(format!("./assets/models/dqn{student_index:03}.mpk")),
         &device,
@@ -133,7 +137,8 @@ fn main() {
     .expect("Should load student element");
 
     let mut teacher_nets = vec![];
-    let teacher_net_indices = vec![11, 55, 70, 5];
+    let teacher_net_indices = vec![4, 0, 27, 38, 25, 42];
+
     for i in teacher_net_indices {
         let teacher_net = load_model(
             &PathBuf::from(format!("./assets/models/dqn{i:03}.mpk")),
@@ -144,8 +149,7 @@ fn main() {
     }
 
     let trained_model = train_against(student_net, teacher_nets, &device, &config);
-
-    let new_model_index = 72;
+    let new_model_index = 77;
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
     trained_model
         .save_file(

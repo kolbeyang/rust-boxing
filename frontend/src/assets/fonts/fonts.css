@@ -1,0 +1,44 @@
+/* Regular */
+@font-face {
+  font-family: "SpaceMono";
+  src: url("./SpaceMono/SpaceMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bold */
+@font-face {
+  font-family: "SpaceMono";
+  src: url("./SpaceMono/SpaceMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Italic */
+@font-face {
+  font-family: "SpaceMono";
+  src: url("./SpaceMono/SpaceMono-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Bold Italic */
+@font-face {
+  font-family: "SpaceMono";
+  src: url("./SpaceMono/SpaceMono-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Big Shoulders Display - Variable Font */
+@font-face {
+  font-family: "BigShoulders";
+  src: url("./BigShoulders-VariableFont_opsz,wght.ttf") format("truetype");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

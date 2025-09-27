@@ -1,14 +1,22 @@
 use std::{cmp::Ordering, f32::consts::PI};
 
+use burn::{
+    prelude::Backend,
+    tensor::{Float, Tensor, cast::ToElement},
+};
 use parry2d::{math::Vector, na::Rotation2};
 
 pub mod control;
 pub mod model;
 pub use control::*;
 pub mod utils;
+use rand::Rng;
 pub use utils::*;
 
+use crate::model::DQN;
+
 pub const OBSERVATION_LENGTH: usize = 25;
+pub const OUTPUT_SIZE: usize = 24;
 
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub enum FistState {
@@ -271,6 +279,25 @@ impl Observation {
             self.op_left_fist_state as f32 / 2.0,
             self.op_right_fist_state as f32 / 2.0,
         ]
+    }
+}
+
+pub fn select_action<B: Backend, R: Rng>(
+    observation: Observation,
+    model: &DQN<B>,
+    epsilon: f32,
+    n_actions: usize,
+    rng: &mut R,
+    device: &B::Device,
+) -> usize {
+    let random: f32 = rng.random();
+    if random < epsilon {
+        return rng.random_range(0..n_actions);
+    } else {
+        let observation = observation.normalize();
+        let obs_tensor = Tensor::<B, 1, Float>::from_floats(observation, device).unsqueeze_dim(0);
+        let all_qvalues: Tensor<B, 1, Float> = model.forward(obs_tensor).squeeze(0);
+        all_qvalues.clone().argmax(0).into_scalar().to_usize()
     }
 }
 

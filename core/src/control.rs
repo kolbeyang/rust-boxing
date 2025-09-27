@@ -1,5 +1,11 @@
+use serde::{Deserialize, Serialize};
 
-#[derive(Copy, Clone, Debug)]
+#[cfg(feature = "wasm")]
+use wasm_bindgen::prelude::*;
+
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi, from_wasm_abi))]
+#[derive(PartialEq, Copy, Debug, Serialize, Deserialize, Clone)]
 pub enum MoveX {
     Left,
     None,
@@ -16,7 +22,9 @@ impl MoveX {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi, from_wasm_abi))]
+#[derive(PartialEq, Copy, Debug, Serialize, Deserialize, Clone)]
 pub enum MoveY {
     Back,
     None,
@@ -31,7 +39,9 @@ impl MoveY {
     }
 }
 
-#[derive(Copy, Debug, Clone)]
+#[cfg_attr(feature = "wasm", derive(tsify::Tsify))]
+#[cfg_attr(feature = "wasm", tsify(into_wasm_abi, from_wasm_abi))]
+#[derive(PartialEq, Copy, Debug, Serialize, Deserialize, Clone)]
 pub struct Control {
     pub move_x: MoveX,
     pub move_y: MoveY,

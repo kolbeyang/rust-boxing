@@ -1,5 +1,26 @@
-
 @import "tailwindcss";
+
+@import "./assets/fonts/fonts.css";
+
+@keyframes opacity-blink {
+  0%,
+  50% {
+    opacity: 100%;
+  }
+  51%,
+  100% {
+    opacity: 0%;
+  }
+}
+
+.animate-opacity-blink {
+  animation: opacity-blink 1s infinite;
+}
+
+@theme {
+  --font-family-shoulders: "BigShoulders", sans-serif;
+  --animate-blink: opacity-blink 1s infinite;
+}
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -7,7 +28,7 @@
   font-weight: 400;
 
   color: #414141;
-  background-color: #F2F2F2;
+  background-color: #f2f2f2;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,6 +44,7 @@ body {
   min-height: 100vh;
   scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
   scrollbar-width: 8px;
+  font-family: "SpaceMono", monospace;
 }
 
 h1 {

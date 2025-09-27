@@ -1,10 +1,9 @@
 use ::rand::rng;
 use core::model::{DQN, DQNConfig};
-use core::{Control, GameState, Player};
+use core::{Control, GameState, Player, select_action};
 use std::path::PathBuf;
-use train::train::select_action;
 
-use burn::record::Recorder;
+use burn::record::{BinFileRecorder, Recorder};
 use burn::{
     backend::Wgpu,
     prelude::*,
@@ -30,13 +29,13 @@ async fn main() {
 
     // Load model 0
     let record0 = NamedMpkFileRecorder::<FullPrecisionSettings>::new()
-        .load(PathBuf::from("./assets/models/dqn11.mpk"), &device)
+        .load(PathBuf::from("./assets/models/dqn025.mpk"), &device)
         .expect("Should be able to load model 0 weights");
     let model0: DQN<MyBackend> = DQNConfig::new(23, 24).init(&device).load_record(record0);
 
     // Load model 1
     let record1 = NamedMpkFileRecorder::<FullPrecisionSettings>::new()
-        .load(PathBuf::from("./assets/models/dqn54.mpk"), &device)
+        .load(PathBuf::from("./assets/models/dqn011.mpk"), &device)
         .expect("Should be able to load model 0 weights");
     let model1: DQN<MyBackend> = DQNConfig::new(23, 24).init(&device).load_record(record1);
 
@@ -252,7 +251,7 @@ fn draw_game(game_state: &GameState) {
         );
 
         // Player label - changed to show AI models
-        let label = format!("AI Model {}", i);
+        let label = format!("AI Model {i}");
         draw_text(&label, health_x, health_y - 5.0, 20.0, WHITE);
     }
 

@@ -1,11 +1,9 @@
-import { BrowserRouter, Route, Routes } from 'react-router'
-import './App.css'
-import Landing from './components/Landing'
-import Home from './components/Home'
-import Layout from './components/Layout'
+import { BrowserRouter, Route, Routes } from "react-router";
+import Landing from "./components/Landing";
+import Home from "./components/Home";
+import Layout from "./components/Layout";
 
 function App() {
-
   return (
     <BrowserRouter>
       <Layout>
@@ -15,7 +13,7 @@ function App() {
         </Routes>
       </Layout>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

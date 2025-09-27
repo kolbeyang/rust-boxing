@@ -140,7 +140,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Found {} model files:", model_files.len());
     for (_, name) in &model_files {
-        println!("  - {}", name);
+        println!("  - {name}");
     }
     println!();
 
@@ -150,10 +150,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         match load_model(path, &device) {
             Ok(model) => {
                 loaded_models.push((model, name.clone()));
-                println!("Successfully loaded: {}", name);
+                println!("Successfully loaded: {name}");
             }
             Err(e) => {
-                println!("Failed to load {}: {}", name, e);
+                println!("Failed to load {name}: {e}");
                 continue;
             }
         }
@@ -176,7 +176,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let (model1, name1) = &loaded_models[i];
             let (model2, name2) = &loaded_models[j];
 
-            println!("Evaluating {} vs {}...", name1, name2);
+            println!("Evaluating {name1} vs {name2}...");
 
             let result = evaluate_models(model1, model2, name1, name2, &device);
             results.push(result);
@@ -228,7 +228,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     for (model_name, wins) in sorted_results {
         let losses = loss_counts.get(model_name).unwrap();
-        println!("{}: {} wins, {} losses", model_name, wins, losses);
+        println!("{model_name}: {wins} wins, {losses} losses");
     }
 
     Ok(())
