@@ -39,6 +39,10 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+button {
+  cursor: pointer;
+}
+
 body {
   margin: 0;
   display: flex;

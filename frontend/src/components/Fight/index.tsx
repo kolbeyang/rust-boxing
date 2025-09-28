@@ -13,9 +13,10 @@ const targetFPS = 24;
 interface Props {
   f0Num: number;
   f1Num: number;
+  endFight: () => void;
 }
 
-const Fight = ({ f0Num, f1Num }: Props) => {
+const Fight = ({ f0Num, f1Num, endFight }: Props) => {
   const [game, setGame] = useState<wasm.Game | null>(null);
   const [gameState, setGameState] = useState<wasm.GameStateWeb | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -51,6 +52,9 @@ const Fight = ({ f0Num, f1Num }: Props) => {
       last_inference_time = time_since_last_frame - frameTime;
       if (time_since_last_frame >= frameTime - last_inference_time) {
         const newState = game.step();
+        if (newState.is_done) {
+          endFight();
+        }
         renderGame(
           ctx,
           newState,
@@ -73,10 +77,10 @@ const Fight = ({ f0Num, f1Num }: Props) => {
 
   return (
     <div className="size-full px-4 py-3 flex flex-col items-center gap-[60px]">
-      <TopBar />
+      <TopBar goBack={endFight} />
       <HealthBar
-        p0Name={fighter0?.name}
-        p1Name={fighter1?.name}
+        p0Name={`${fighter0?.name.toUpperCase()}_${fighter0?.number.toString().padStart(3, "0")}`}
+        p1Name={`${fighter1?.name.toUpperCase()}_${fighter1?.number.toString().padStart(3, "0")}`}
         p0Color={fighter0?.color}
         p1Color={fighter1?.color}
         p0Health={gameState?.player_0.health}

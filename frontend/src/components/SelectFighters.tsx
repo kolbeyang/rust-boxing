@@ -140,7 +140,7 @@ const SelectFighters = ({ startFight: startFightProp }: Props) => {
       >
         <div
           className={cn(
-            "h-full w-fit transition-all duration-200 border-t border-transparent",
+            "h-full w-fit transition-all duration-200 border-t border-transparent relative",
             {
               "translate-y-[100vh]": selectingState === "fight",
               "border-t-zinc-700": isGridScrolled,
@@ -150,7 +150,7 @@ const SelectFighters = ({ startFight: startFightProp }: Props) => {
           <div
             className="grid grid-cols-3 w-full max-w-[960px] gap-x-0 gap-y-8 overflow-auto items-start min-h-0 auto-rows-min scrollbar-hide h-full pt-[40px]"
             onScroll={(e) =>
-              setIsGridScrolled(e.currentTarget.scrollTop > 10.0)
+              setIsGridScrolled(e.currentTarget.scrollTop > 40.0)
             }
           >
             {FIGHTERS.map((fighter) => (

@@ -18,7 +18,7 @@ const FighterIndicator = ({
   return (
     <div
       className={cn(
-        "flex justify-center w-[400px] h-[128px] items-center bg-zinc-200 rounded-[4px] overflow-hidden relative",
+        "flex justify-center w-[360px] h-[116px] items-center bg-zinc-200 rounded-[4px] overflow-hidden relative",
         "hover:scale-105 hover:ring-1 hover:ring-zinc-700",
         className,
       )}
@@ -35,7 +35,7 @@ const FighterIndicator = ({
         <div
           className={cn("size-full flex justify-between items-start px-3 py-2")}
         >
-          <span className="font-family-shoulders text-[120px] leading-[114px] font-stretch-extra-condensed font-semibold z-10">
+          <span className="font-family-shoulders text-[110px] leading-[104px] font-stretch-extra-condensed font-semibold z-10">
             {fighter.name.toUpperCase()}
           </span>
           <span className="z-10">
