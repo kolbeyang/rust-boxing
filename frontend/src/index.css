@@ -2,6 +2,13 @@
 
 @import "./assets/fonts/fonts.css";
 
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
 @keyframes opacity-blink {
   0%,
   50% {
@@ -13,13 +20,9 @@
   }
 }
 
-.animate-opacity-blink {
-  animation: opacity-blink 1s infinite;
-}
-
 @theme {
   --font-family-shoulders: "BigShoulders", sans-serif;
-  --animate-blink: opacity-blink 1s infinite;
+  --animate-blink: opacity-blink 0.75s infinite;
 }
 
 :root {

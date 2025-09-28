@@ -6,14 +6,21 @@ interface Props {
   fighter: FighterWeb | null;
   isBlinking: boolean;
   onClick: () => void;
+  className?: string;
 }
 
-const FighterIndicator = ({ fighter, isBlinking, onClick }: Props) => {
+const FighterIndicator = ({
+  fighter,
+  isBlinking,
+  onClick,
+  className,
+}: Props) => {
   return (
     <div
       className={cn(
         "flex justify-center w-[400px] h-[128px] items-center bg-zinc-200 rounded-[4px] overflow-hidden relative",
         "hover:scale-105 hover:ring-1 hover:ring-zinc-700",
+        className,
       )}
       onClick={onClick}
     >

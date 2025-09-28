@@ -31,8 +31,6 @@ const Fight = ({ f0Num, f1Num }: Props) => {
     wasm.Game.new(f0Num, f1Num).then((game) => setGame(game));
   }, []);
 
-  // Canvas rendering function
-
   useEffect(() => {
     if (!game || !canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -53,7 +51,12 @@ const Fight = ({ f0Num, f1Num }: Props) => {
       last_inference_time = time_since_last_frame - frameTime;
       if (time_since_last_frame >= frameTime - last_inference_time) {
         const newState = game.step();
-        renderGame(ctx, newState);
+        renderGame(
+          ctx,
+          newState,
+          fighter0?.color ?? "#000",
+          fighter1?.color ?? "#000",
+        );
         setGameState(newState);
         lastTime = currentTime;
       }
@@ -69,11 +72,13 @@ const Fight = ({ f0Num, f1Num }: Props) => {
   }, [game]);
 
   return (
-    <div className="flex size-full px-4 py-3 flex flex-col items-center gap-[60px]">
+    <div className="size-full px-4 py-3 flex flex-col items-center gap-[60px]">
       <TopBar />
       <HealthBar
         p0Name={fighter0?.name}
         p1Name={fighter1?.name}
+        p0Color={fighter0?.color}
+        p1Color={fighter1?.color}
         p0Health={gameState?.player_0.health}
         p1Health={gameState?.player_1.health}
         p0Energy={gameState?.player_0.energy}

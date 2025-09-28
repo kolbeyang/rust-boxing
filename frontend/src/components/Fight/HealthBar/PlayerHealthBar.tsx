@@ -1,4 +1,5 @@
 import { times } from "lodash";
+
 import { cn } from "../../../utils/classNameMerge";
 
 interface Props {
@@ -10,13 +11,16 @@ interface Props {
 const PlayerHealthBar = ({ health, side, color }: Props) => {
   return (
     <div className="flex gap-2 w-full items-center justify-center">
-      {times(5, (n) => (
-        <div
-          className={cn("w-full bg-zinc-300 h-[8px] rounded-[2px]", {
-            [color]: side === "left" ? health >= n : health >= 5 - n,
-          })}
-        />
-      ))}
+      {times(5, (n) => {
+        const is_primary_color =
+          side === "left" ? health >= n : health >= 5 - n;
+        return (
+          <div
+            className={cn("w-full bg-zinc-300 h-[8px] rounded-[2px]")}
+            style={is_primary_color ? { backgroundColor: color } : {}}
+          />
+        );
+      })}
     </div>
   );
 };

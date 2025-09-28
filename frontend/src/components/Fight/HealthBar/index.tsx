@@ -1,11 +1,15 @@
-import { IconHeart, IconHeartFilled } from "@tabler/icons-react";
+import { IconHeartFilled } from "@tabler/icons-react";
+
 import { cn } from "../../../utils/classNameMerge";
-import PlayerHealthBar from "./PlayerHealthBar";
+
 import PlayerEnergyBar from "./PlayerEnergyBar";
+import PlayerHealthBar from "./PlayerHealthBar";
 
 interface Props {
   p0Name?: string;
   p1Name?: string;
+  p0Color?: string;
+  p1Color?: string;
   p0Health?: number;
   p1Health?: number;
   p0Energy?: number;
@@ -16,6 +20,8 @@ interface Props {
 const HealthBar = ({
   p0Name,
   p1Name,
+  p0Color,
+  p1Color,
   p0Energy,
   p1Health,
   p0Health,
@@ -32,13 +38,13 @@ const HealthBar = ({
         <div className="flex gap-8">
           <PlayerHealthBar
             health={p0Health ?? 0}
-            color={"bg-[#FF3131]"}
+            color={p0Color ?? ""}
             side={"left"}
           />
           <IconHeartFilled className="text-zinc-300 shrink-0" />
           <PlayerHealthBar
             health={p1Health ?? 0}
-            color={"bg-[#414141]"}
+            color={p1Color ?? ""}
             side={"right"}
           />
         </div>
