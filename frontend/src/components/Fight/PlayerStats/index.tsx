@@ -1,4 +1,5 @@
 import type { PlayerWeb } from "boxing-web";
+import { motion } from "framer-motion";
 
 import { cn } from "../../../utils/classNameMerge";
 
@@ -9,11 +10,17 @@ import RotationMetric from "./RotationMetric";
 interface Props {
   className?: string;
   player: PlayerWeb;
+  side: "left" | "right";
 }
 
-const PlayerStats = ({ className, player }: Props) => {
+const PlayerStats = ({ className, player, side }: Props) => {
   return (
-    <div
+    <motion.div
+      initial={{ translateX: side === "left" ? "-200px" : "200px" }}
+      animate={{ translateX: "0" }}
+      transition={{
+        duration: 0.25,
+      }}
       className={cn(
         "flex w-[220px] flex-col items-center justify-between gap-2",
         className,
@@ -29,7 +36,7 @@ const PlayerStats = ({ className, player }: Props) => {
         <RotationMetric label="Rotation" angle={player.rotation + Math.PI} />
       </div>
       <PlayerControls control={player.last_control} className="max-w-[160px]" />
-    </div>
+    </motion.div>
   );
 };
 

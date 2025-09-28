@@ -1,4 +1,5 @@
 import * as wasm from "boxing-web";
+import { motion, type Variants } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { FIGHTERS } from "../../utils/fighters";
@@ -18,6 +19,7 @@ interface Props {
 
 const Fight = ({ f0Num, f1Num, endFight }: Props) => {
   const [game, setGame] = useState<wasm.Game | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [gameState, setGameState] = useState<wasm.GameStateWeb | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -29,11 +31,15 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
   }, []);
 
   useEffect(() => {
-    wasm.Game.new(f0Num, f1Num).then((game) => setGame(game));
+    wasm.Game.new(f0Num, f1Num).then((game) => {
+      setGame(game);
+      // TODO: find a way to get initial state
+      setGameState(game.step());
+    });
   }, []);
 
   useEffect(() => {
-    if (!game || !canvasRef.current) return;
+    if (!game || !canvasRef.current || isLoading) return;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -73,7 +79,7 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
     return () => {
       cancelAnimationFrame(animationId);
     };
-  }, [game]);
+  }, [game, isLoading]);
 
   return (
     <div className="size-full px-4 py-3 flex flex-col items-center gap-[60px]">
@@ -94,16 +100,55 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
           <PlayerStats
             player={gameState?.player_0}
             className="hidden md:flex"
+            side="left"
           />
         )}
-        <canvas
-          ref={canvasRef}
-          className="size-[380px] md:size-[440px] bg-zinc-200 rounded-[40px]"
-        />
+        <motion.div
+          className="size-[380px] md:size-[440px] rounded-[44px] relative"
+          initial={{ backgroundColor: "#00000000" }}
+          animate={{ backgroundColor: "#e4e4e7" }}
+          transition={{ delay: 0.5 }}
+        >
+          <motion.svg
+            className="size-full absolute -z-10"
+            viewBox="0 0 100 100"
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.rect
+              className="size-[calc(100%-1px)]"
+              x="0.5"
+              y="0.5"
+              rx="10"
+              onAnimationComplete={() => setIsLoading(false)}
+              custom={3}
+              style={{
+                strokeWidth: 0.25,
+                strokeLinecap: "square",
+                fill: "transparent",
+              }}
+              initial={{ pathLength: 0, opacity: 0, stroke: "#3f3f46" }}
+              animate={{
+                pathLength: 1,
+                opacity: 1,
+                stroke: "#a1a1aa",
+              }}
+              transition={{ duration: 0.5 }}
+            />
+          </motion.svg>
+          <motion.canvas
+            initial={{ visibility: "hidden" }}
+            animate={{ visibility: "visible" }}
+            transition={{ delay: 0.5 }}
+            ref={canvasRef}
+            className="size-full bg-zinc-200 rounded-[40px]"
+          />
+        </motion.div>
         {gameState && (
           <PlayerStats
             player={gameState?.player_1}
             className="hidden md:flex"
+            side="right"
           />
         )}
       </div>

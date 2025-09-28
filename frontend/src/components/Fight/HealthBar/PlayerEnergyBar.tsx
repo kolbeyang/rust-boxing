@@ -1,3 +1,5 @@
+import { motion } from "framer-motion";
+
 import { cn } from "../../../utils/classNameMerge";
 
 interface Props {
@@ -16,9 +18,16 @@ const PlayerEnergyBar = ({ energy, side, className }: Props) => {
         className,
       )}
     >
-      <div
+      <motion.div
+        initial={{ scaleX: "20%" }}
+        animate={{
+          scaleX: "100%",
+        }}
+        transition={{
+          duration: 0.5,
+        }}
         style={{ flexBasis: `${(energy * 100) / 10}%` }}
-        className="h-full bg-zinc-400"
+        className="h-full bg-zinc-400 origin-left"
       />
     </div>
   );
