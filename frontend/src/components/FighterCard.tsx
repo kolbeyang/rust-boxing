@@ -22,13 +22,14 @@ const FighterCard = ({ fighter, isSelected, className, onClick }: Props) => {
       onClick={onClick}
     >
       <div
-        className="flex justify-between text-white px-3 py-1 shrink-0"
+        className="flex justify-between text-white w-full h-[4px] shrink-0"
         style={{ background: color }}
-      >
-        <span className="">{name}</span>
+      />
+      <div className="flex w-full justify-between px-3 py-1 border-b border-b-zinc-700">
+        <span className="">{name.toUpperCase()}</span>
         <span className="">{number.toString().padStart(3, "0")}</span>
       </div>
-      <div className="px-3 py-1 shrink-0">{`"...${description}..."`}</div>
+      <div className="px-3 py-2 shrink-0">{`"...${description}..."`}</div>
     </div>
   );
 };
