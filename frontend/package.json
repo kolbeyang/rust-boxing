@@ -19,6 +19,7 @@
     "@tailwindcss/vite": "^4.1.13",
     "@types/lodash": "^4.17.20",
     "boxing-web": "link:../web/pkg",
+    "clsx": "^2.1.1",
     "lodash": "^4.17.21",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
