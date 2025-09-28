@@ -30,8 +30,7 @@ const PlayerHealthBar = ({ health, side, color }: Props) => {
       )}
     >
       {times(5, (n) => {
-        const is_primary_color =
-          side === "left" ? health >= n : health >= 5 - n;
+        const is_primary_color = side === "left" ? health > n : health >= 5 - n;
         return (
           <motion.div
             initial={{ scaleX: "20%", opacity: "10%" }}

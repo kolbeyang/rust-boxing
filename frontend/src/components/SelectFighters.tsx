@@ -152,7 +152,7 @@ const SelectFighters = ({ startFight: startFightProp }: Props) => {
           )}
         >
           <div
-            className="grid grid-cols-2 md:grid-cols-3 w-full max-w-[960px] gap-x-0 gap-y-8 overflow-auto items-start min-h-0 auto-rows-min scrollbar-hide h-full pt-[40px]"
+            className="grid grid-cols-2 md:grid-cols-3 w-full max-w-[960px] gap-x-0 gap-y-8 overflow-auto items-start min-h-0 auto-rows-min scrollbar-hide h-full pt-[40px] pb-[60px]"
             onScroll={(e) =>
               setIsGridScrolled(e.currentTarget.scrollTop > 40.0)
             }

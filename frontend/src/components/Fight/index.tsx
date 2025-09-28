@@ -1,5 +1,5 @@
 import * as wasm from "boxing-web";
-import { motion, type Variants } from "framer-motion";
+import { motion, useAnimationControls } from "framer-motion";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { FIGHTERS } from "../../utils/fighters";
@@ -22,6 +22,7 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [gameState, setGameState] = useState<wasm.GameStateWeb | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const controls = useAnimationControls();
 
   const [fighter0, fighter1] = useMemo(() => {
     const fighter0 = FIGHTERS.find((f) => f.number === f0Num);
@@ -37,6 +38,21 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
       setGameState(game.step());
     });
   }, []);
+
+  const showHit = async (x: number, y: number, color: string) => {
+    console.log("showHit!");
+    await controls.start({
+      scale: [0.75, 1, 0.5],
+      left: [x],
+      top: [y],
+      background: [`radial-gradient(circle, ${color} 0%, transparent 70%)`],
+      opacity: [0.2, 0.25, 0],
+      transition: {
+        duration: 0.5,
+        ease: "easeInOut",
+      },
+    });
+  };
 
   useEffect(() => {
     if (!game || !canvasRef.current || isLoading) return;
@@ -67,7 +83,23 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
           fighter0?.color ?? "#000",
           fighter1?.color ?? "#000",
         );
-        setGameState(newState);
+
+        setGameState((prev) => {
+          // Handle players getting hit effect
+          if (newState.player_0.health < (prev?.player_0.health ?? 0)) {
+            console.log(newState.player_0.health, prev?.player_0.health);
+            const position = newState.player_0.position;
+
+            showHit(position.x, position.y, fighter0?.color ?? "#000");
+          }
+          if (newState.player_1.health < (prev?.player_1.health ?? 0)) {
+            console.log(newState.player_1.health, prev?.player_1.health);
+            const position = newState.player_1.position;
+            showHit(position.x, position.y, fighter1?.color ?? "#000");
+          }
+
+          return newState;
+        });
         lastTime = currentTime;
       }
 
@@ -109,9 +141,14 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
           animate={{ backgroundColor: "#e4e4e7" }}
           transition={{ delay: 0.5 }}
         >
+          <motion.div
+            className="size-[700px] opacity-0 absolute -translate-[50%]"
+            animate={controls}
+          />
+
           <motion.svg
             className="size-full absolute -z-10"
-            viewBox="0 0 100 100"
+            viewBox="0 0 400 400"
             initial="hidden"
             animate="visible"
           >
@@ -119,11 +156,11 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
               className="size-[calc(100%-1px)]"
               x="0.5"
               y="0.5"
-              rx="10"
+              rx="42"
               onAnimationComplete={() => setIsLoading(false)}
               custom={3}
               style={{
-                strokeWidth: 0.25,
+                strokeWidth: 1,
                 strokeLinecap: "square",
                 fill: "transparent",
               }}
