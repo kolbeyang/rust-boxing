@@ -1,5 +1,7 @@
 import type { PlayerWeb } from "boxing-web";
+
 import { cn } from "../../../utils/classNameMerge";
+
 import PlayerControls from "./PlayerControls";
 import NumericMetric from "./NumericMetric";
 import RotationMetric from "./RotationMetric";

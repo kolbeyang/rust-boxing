@@ -35,7 +35,7 @@ const HealthBar = ({
         <span>{p1Name}</span>
       </div>
       <div className="flex flex-col gap-[8px]">
-        <div className="flex gap-8">
+        <div className="flex gap-3 md:gap-8">
           <PlayerHealthBar
             health={p0Health ?? 0}
             color={p0Color ?? ""}

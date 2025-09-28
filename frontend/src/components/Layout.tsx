@@ -1,4 +1,3 @@
-
 import type { ReactNode } from "react";
 
 interface Props {
@@ -7,7 +6,7 @@ interface Props {
 
 const Layout = ({ children }: Props) => {
   return (
-    <div className="h-screen w-screen">{children}</div>
+    <div className="h-screen w-screen text-sm md:text-base">{children}</div>
   );
 };
 

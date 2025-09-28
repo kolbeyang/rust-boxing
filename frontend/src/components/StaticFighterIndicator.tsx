@@ -11,7 +11,9 @@ const StaticFighterIndicator = ({ fighter, className }: Props) => {
   return (
     <div
       className={cn(
-        "flex justify-center w-[400px] h-[128px] items-center bg-zinc-200 rounded-[4px] overflow-hidden relative",
+        "w-[300px] h-[96px]",
+        "flex justify-center md:w-[400px] md:h-[128px] items-center bg-zinc-200 rounded-[4px] overflow-hidden relative",
+
         className,
       )}
     >
@@ -21,7 +23,12 @@ const StaticFighterIndicator = ({ fighter, className }: Props) => {
       <div
         className={cn("size-full flex justify-between items-start px-3 py-2")}
       >
-        <span className="font-family-shoulders text-[120px] leading-[114px] font-stretch-extra-condensed font-semibold z-10">
+        <span
+          className={cn(
+            "font-family-shoulders md:text-[120px] md:leading-[114px] font-stretch-extra-condensed font-semibold z-10",
+            "text-[90px] leading-[84px]",
+          )}
+        >
           {fighter?.name.toUpperCase()}
         </span>
         <span className="z-10">

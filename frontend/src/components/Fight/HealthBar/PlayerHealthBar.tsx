@@ -10,7 +10,12 @@ interface Props {
 
 const PlayerHealthBar = ({ health, side, color }: Props) => {
   return (
-    <div className="flex gap-2 w-full items-center justify-center">
+    <div
+      className={cn(
+        "gap-1",
+        "flex md:gap-2 w-full items-center justify-center",
+      )}
+    >
       {times(5, (n) => {
         const is_primary_color =
           side === "left" ? health >= n : health >= 5 - n;

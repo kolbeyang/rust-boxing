@@ -90,12 +90,22 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
         className="max-w-[750px]"
       />
       <div className="w-full flex gap-[80px] justify-center">
-        {gameState && <PlayerStats player={gameState?.player_0} />}
+        {gameState && (
+          <PlayerStats
+            player={gameState?.player_0}
+            className="hidden md:flex"
+          />
+        )}
         <canvas
           ref={canvasRef}
-          className="size-[440px] bg-zinc-200 rounded-[40px]"
+          className="size-[380px] md:size-[440px] bg-zinc-200 rounded-[40px]"
         />
-        {gameState && <PlayerStats player={gameState?.player_1} />}
+        {gameState && (
+          <PlayerStats
+            player={gameState?.player_1}
+            className="hidden md:flex"
+          />
+        )}
       </div>
     </div>
   );

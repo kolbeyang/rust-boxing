@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { cn } from "../../utils/classNameMerge";
 
 interface Props {
-  goBack: () => void;
+  goBack?: () => void;
 }
 
 const TopBar = ({ goBack }: Props) => {

@@ -1,14 +1,21 @@
 import { useNavigate } from "react-router";
 
+import { cn } from "../utils/classNameMerge";
+
 const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex size-full flex-col items-center justify-center gap-8">
-      <div className="rounded-[4px] bg-gray-200 px-4 py-3 leading-[80px] font-family-shoulders font-stretch-extra-condensed font-semibold text-[80px]">
+    <div className="flex size-full flex-col items-center justify-center gap-8 ">
+      <div
+        className={cn(
+          "rounded-[4px] bg-gray-200 px-4 py-3 text-[60px] leading-[60px] font-family-shoulders font-stretch-extra-condensed font-semibold ",
+          "md:px-4 md:py-3 md:text-[80px] md:leading-[80px] font-family-shoulders font-stretch-extra-condensed font-semibold ",
+        )}
+      >
         RUST BOXING
       </div>
-      <span className="max-w-[440px] text-center">
+      <span className="w-[360px] max-w-full md:w-[440px] text-center">
         Little AI boxers trained through reinforcement learning in{" "}
         <a
           href="https://burn.dev/"

@@ -49,7 +49,7 @@ const SelectFighters = ({ startFight: startFightProp }: Props) => {
   };
 
   return (
-    <div className="size-full px-4 pt-3 flex flex-col items-center relative">
+    <div className="size-full px-2 md:px-4 pt-3 flex flex-col items-center relative">
       <TopBar />
       <div
         className={cn(
@@ -104,9 +104,13 @@ const SelectFighters = ({ startFight: startFightProp }: Props) => {
         </div>
       </div>
       <div
-        className={cn("flex items-center gap-5 pt-[60px] pb-[40px]", {
-          "pointer-events-none": selectingState === "fight",
-        })}
+        className={cn(
+          "flex-col gap-3 pt-[30px] pb-[20px]",
+          "flex md:flex-row items-center md:gap-5 md:pt-[60px] md:pb-[40px]",
+          {
+            "pointer-events-none": selectingState === "fight",
+          },
+        )}
       >
         <FighterIndicator
           fighter={selectedFighter0}
@@ -148,7 +152,7 @@ const SelectFighters = ({ startFight: startFightProp }: Props) => {
           )}
         >
           <div
-            className="grid grid-cols-3 w-full max-w-[960px] gap-x-0 gap-y-8 overflow-auto items-start min-h-0 auto-rows-min scrollbar-hide h-full pt-[40px]"
+            className="grid grid-cols-2 md:grid-cols-3 w-full max-w-[960px] gap-x-0 gap-y-8 overflow-auto items-start min-h-0 auto-rows-min scrollbar-hide h-full pt-[40px]"
             onScroll={(e) =>
               setIsGridScrolled(e.currentTarget.scrollTop > 40.0)
             }
@@ -158,7 +162,7 @@ const SelectFighters = ({ startFight: startFightProp }: Props) => {
                 fighter={fighter}
                 isSelected={selectedFighter?.number === fighter.number}
                 onClick={() => setSelectedFighter(fighter)}
-                className="shrink-0 m-4 h-full"
+                className="shrink-0 m-2 md:m-4 h-full"
               />
             ))}
           </div>
