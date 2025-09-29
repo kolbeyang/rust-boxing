@@ -42,10 +42,12 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
   const showHit = async (x: number, y: number, color: string) => {
     console.log("showHit!");
     await controls.start({
-      scale: [0.75, 1, 0.5],
+      scale: [0.25, 1, 0.75],
       left: [x],
       top: [y],
-      background: [`radial-gradient(circle, ${color} 0%, transparent 70%)`],
+      background: [`radial-gradient(circle, transparent 50% ,${color}20 70%)`],
+      borderWidth: [5, 40, 0],
+      borderColor: [color],
       opacity: [0.2, 0.25, 0],
       transition: {
         duration: 0.5,
@@ -142,7 +144,7 @@ const Fight = ({ f0Num, f1Num, endFight }: Props) => {
           transition={{ delay: 0.5 }}
         >
           <motion.div
-            className="size-[700px] opacity-0 absolute -translate-[50%]"
+            className="size-[500px] opacity-0 absolute -translate-[50%] rounded-full"
             animate={controls}
           />
 
