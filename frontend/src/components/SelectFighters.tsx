@@ -44,7 +44,8 @@ const SelectFighters = ({ startFight: startFightProp }: Props) => {
       setSelectingState("p1");
     } else {
       setSelectedFighter1(fighter);
-      if (selectedFighter0 && selectedFighter1) {
+      // NOTE: ensure both fighters are selected
+      if (selectedFighter0) {
         setSelectingState("fight");
       }
     }
