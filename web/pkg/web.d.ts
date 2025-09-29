@@ -1,7 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
-export function greet(): void;
 export function get_fighters(): FighterWeb[];
+export function greet(): void;
 export enum FistStateWeb {
   Resting = 0,
   Extending = 1,

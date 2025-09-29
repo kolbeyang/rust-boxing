@@ -1,6 +1,13 @@
 /* tslint:disable */
 /* eslint-disable */
 export const memory: WebAssembly.Memory;
+export const __wbg_fighterweb_free: (a: number, b: number) => void;
+export const __wbg_get_fighterweb_number: (a: number) => number;
+export const __wbg_set_fighterweb_number: (a: number, b: number) => void;
+export const fighterweb_name: (a: number) => [number, number];
+export const fighterweb_description: (a: number) => [number, number];
+export const fighterweb_color: (a: number) => [number, number];
+export const get_fighters: () => [number, number];
 export const __wbg_game_free: (a: number, b: number) => void;
 export const __wbg_point_free: (a: number, b: number) => void;
 export const __wbg_get_point_x: (a: number) => number;
@@ -39,13 +46,6 @@ export const __wbg_set_gamestateweb_is_done: (a: number, b: number) => void;
 export const game_new: (a: number, b: number) => any;
 export const game_step: (a: number) => number;
 export const greet: () => void;
-export const __wbg_fighterweb_free: (a: number, b: number) => void;
-export const __wbg_get_fighterweb_number: (a: number) => number;
-export const __wbg_set_fighterweb_number: (a: number, b: number) => void;
-export const fighterweb_name: (a: number) => [number, number];
-export const fighterweb_description: (a: number) => [number, number];
-export const fighterweb_color: (a: number) => [number, number];
-export const get_fighters: () => [number, number];
 export const __wbindgen_exn_store: (a: number) => void;
 export const __externref_table_alloc: () => number;
 export const __wbindgen_export_2: WebAssembly.Table;
@@ -54,6 +54,6 @@ export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) =>
 export const __wbindgen_export_5: WebAssembly.Table;
 export const __wbindgen_free: (a: number, b: number, c: number) => void;
 export const __externref_drop_slice: (a: number, b: number) => void;
-export const closure396_externref_shim: (a: number, b: number, c: any) => void;
-export const closure431_externref_shim: (a: number, b: number, c: any, d: any) => void;
+export const closure267_externref_shim: (a: number, b: number, c: any) => void;
+export const closure301_externref_shim: (a: number, b: number, c: any, d: any) => void;
 export const __wbindgen_start: () => void;
