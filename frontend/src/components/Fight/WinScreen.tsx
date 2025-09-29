@@ -60,7 +60,7 @@ const WinScreen = ({ winnerNumber: winNumber, onBack }: Props) => {
           onClick={onBack}
         >
           <div className="absolute top-0 left-0 size-full animate-blink bg-[#FF3131] z-0" />
-          <span className="z-20 relative">NEXT</span>
+          <span className="z-20 relative">NEW MATCH</span>
         </button>
       </motion.div>
     </div>

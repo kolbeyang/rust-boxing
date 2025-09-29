@@ -8,7 +8,7 @@ import HealthBar from "./HealthBar";
 import PlayerStats from "./PlayerStats";
 import { renderGame } from "./render";
 
-const TARGET_FPS = 24;
+const TARGET_FPS = 48;
 
 const ENDGAME_DELAY = 2000; // ms
 
