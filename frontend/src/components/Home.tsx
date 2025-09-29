@@ -9,7 +9,7 @@ const Home = () => {
     [number, number] | null
   >(null);
 
-  const endFight = () => {
+  const goBack = () => {
     setSelectedFighterNumbers(null);
   };
 
@@ -22,7 +22,7 @@ const Home = () => {
       <Fight
         f0Num={selectedFighterNumbers[0]}
         f1Num={selectedFighterNumbers[1]}
-        endFight={endFight}
+        goBack={goBack}
       />
     </>
   ) : (
