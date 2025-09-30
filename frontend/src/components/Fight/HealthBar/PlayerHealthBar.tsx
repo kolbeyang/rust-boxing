@@ -12,6 +12,7 @@ interface Props {
 const PlayerHealthBar = ({ health, side, color }: Props) => {
   return (
     <motion.div
+      key={`player-health-bar-${side}`}
       initial={{ scaleX: "20%" }}
       animate={{
         scaleX: "100%",
@@ -20,6 +21,7 @@ const PlayerHealthBar = ({ health, side, color }: Props) => {
         duration: 0.25,
         delay: 0.25,
       }}
+      exit={{ scaleX: "20%" }}
       className={cn(
         "gap-1",
         "flex md:gap-2 w-full items-center justify-center",

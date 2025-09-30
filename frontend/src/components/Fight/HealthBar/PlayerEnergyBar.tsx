@@ -10,7 +10,8 @@ interface Props {
 
 const PlayerEnergyBar = ({ energy, side, className }: Props) => {
   return (
-    <div
+    <motion.div
+      key={`player-energy-bar-${side}`}
       // TODO: max energy should come from Rust
       className={cn(
         "flex gap-2 w-full items-center h-[4px] bg-zinc-300",
@@ -23,13 +24,14 @@ const PlayerEnergyBar = ({ energy, side, className }: Props) => {
         animate={{
           scaleX: "100%",
         }}
+        exit={{ scaleX: "20%" }}
         transition={{
           duration: 0.5,
         }}
         style={{ flexBasis: `${(energy * 100) / 10}%` }}
         className="h-full bg-zinc-400 origin-left"
       />
-    </div>
+    </motion.div>
   );
 };
 

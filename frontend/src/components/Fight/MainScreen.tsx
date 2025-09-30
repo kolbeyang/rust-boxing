@@ -146,9 +146,11 @@ const MainScreen = ({ f0Num, f1Num, endFight: endFightProp }: Props) => {
           />
         )}
         <motion.div
+          key="ring-wrapper"
           className="size-[380px] md:size-[440px] rounded-[44px] relative"
           initial={{ backgroundColor: "#00000000" }}
           animate={{ backgroundColor: "#e4e4e7" }}
+          exit={{ backgroundColor: "#00000000" }}
           transition={{ delay: 0.5 }}
         >
           <motion.div
@@ -163,6 +165,7 @@ const MainScreen = ({ f0Num, f1Num, endFight: endFightProp }: Props) => {
             animate="visible"
           >
             <motion.rect
+              key="outline-animator"
               className="size-[calc(100%-1px)]"
               x="0.5"
               y="0.5"
@@ -180,6 +183,7 @@ const MainScreen = ({ f0Num, f1Num, endFight: endFightProp }: Props) => {
                 opacity: 1,
                 stroke: "#a1a1aa",
               }}
+              exit={{ pathLength: 0, opacity: 0, stroke: "#3f3f46" }}
               transition={{ duration: 0.5 }}
             />
           </motion.svg>

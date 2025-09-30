@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 
 import MainScreen from "./MainScreen";
 import TopBar from "./TopBar";
@@ -20,18 +21,21 @@ const Fight = ({ goBack, ...props }: Props) => {
   };
 
   return (
-    <>
+    <AnimatePresence mode="wait">
       {screen === "end" && (
-        <WinScreen winnerNumber={winnerNum!} onBack={goBack} />
+        <WinScreen key="win-screen" winnerNumber={winnerNum!} onBack={goBack} />
       )}
 
       {screen === "main" && (
-        <div className="size-full px-4 py-3 flex flex-col items-center gap-[60px]">
+        <motion.div
+          key="main"
+          className="size-full px-4 py-3 flex flex-col items-center gap-[60px]"
+        >
           <TopBar goBack={goBack} />
           <MainScreen {...props} endFight={endFight} />
-        </div>
+        </motion.div>
       )}
-    </>
+    </AnimatePresence>
   );
 };
 
