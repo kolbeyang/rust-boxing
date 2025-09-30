@@ -9,41 +9,47 @@ interface Props {
   onBack: () => void;
 }
 
-const WinScreen = ({ winnerNumber: winNumber, onBack }: Props) => {
+const FightEndScreen = ({ winnerNumber: winNumber, onBack }: Props) => {
   const winner = useMemo(() => {
     const winner = FIGHTERS.find((f) => f.number === winNumber);
     return winner;
   }, [winNumber]);
 
   return (
-    <div className={cn("size-full flex flex-col justify-center items-center")}>
+    <div
+      key="fight-end-screen"
+      className={cn("size-full flex flex-col justify-center items-center")}
+    >
       <div className="flex flex-col gap-0 w-full items-center">
         <motion.span
+          key="winner-name"
           className={cn(
             "font-family-shoulders md:text-[120px] md:leading-[114px] font-stretch-extra-condensed font-semibold z-10",
             "text-[90px] leading-[84px]",
           )}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
         >
           {winner?.name.toUpperCase()}
         </motion.span>
 
         <motion.span
+          key="wins-label"
           className={cn(
             "font-family-shoulders md:text-[120px] md:leading-[114px] font-stretch-extra-condensed font-semibold z-10",
             "text-[90px] leading-[84px]",
           )}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+          transition={{ duration: 0.2, ease: "easeOut", delay: 0.2 }}
         >
           WINS
         </motion.span>
       </div>
 
       <motion.div
+        key="button-box"
         className="flex gap-4 text-lg mt-8"
         initial={{
           translateY: "100%",
@@ -53,7 +59,7 @@ const WinScreen = ({ winnerNumber: winNumber, onBack }: Props) => {
           translateY: "0%",
           opacity: 1,
         }}
-        transition={{ duration: 0.3, ease: "easeOut", delay: 0.5 }}
+        transition={{ duration: 0.2, ease: "easeOut", delay: 0.5 }}
       >
         <button
           className="bg-zinc-700 px-8 py-4 text-white rounded-[4px] relative overflow-hidden"
@@ -67,4 +73,4 @@ const WinScreen = ({ winnerNumber: winNumber, onBack }: Props) => {
   );
 };
 
-export default WinScreen;
+export default FightEndScreen;

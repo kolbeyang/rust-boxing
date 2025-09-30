@@ -30,7 +30,7 @@ const FighterIndicator = ({
       </span>
       {/*Blinker*/}
       {isBlinking && (
-        <div className="bg-zinc-400/50 size-full top-0 left-0 absolute animate-blink" />
+        <div className="bg-zinc-400/50 size-full top-0 left-0 absolute animate-blink ring-inset ring-1 ring-zinc-400 rounded-[4px]" />
       )}
       {fighter ? (
         <div

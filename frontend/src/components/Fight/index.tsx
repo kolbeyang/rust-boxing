@@ -1,9 +1,10 @@
+import { motion } from "framer-motion";
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 
+import FightEndScreen from "./FightEndScreen";
+import FightStartScreen from "./FightStartScreen";
 import MainScreen from "./MainScreen";
 import TopBar from "./TopBar";
-import WinScreen from "./WinScreen";
 
 interface Props {
   f0Num: number;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 const Fight = ({ goBack, ...props }: Props) => {
-  const [screen, setScreen] = useState<"main" | "end">("main");
+  const [screen, setScreen] = useState<"start" | "main" | "end">("start");
   const [winnerNum, setWinnerNum] = useState<number | null>(null);
 
   const endFight = (winnerNum: number) => {
@@ -21,9 +22,23 @@ const Fight = ({ goBack, ...props }: Props) => {
   };
 
   return (
-    <AnimatePresence mode="wait">
+    <>
+      {screen === "start" && (
+        <FightStartScreen
+          f0Num={props.f0Num}
+          f1Num={props.f1Num}
+          key="win-screen"
+          onBack={goBack}
+          onFight={() => setScreen("main")}
+        />
+      )}
+
       {screen === "end" && (
-        <WinScreen key="win-screen" winnerNumber={winnerNum!} onBack={goBack} />
+        <FightEndScreen
+          key="win-screen"
+          winnerNumber={winnerNum!}
+          onBack={goBack}
+        />
       )}
 
       {screen === "main" && (
@@ -35,7 +50,7 @@ const Fight = ({ goBack, ...props }: Props) => {
           <MainScreen {...props} endFight={endFight} />
         </motion.div>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 

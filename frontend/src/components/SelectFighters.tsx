@@ -1,174 +1,121 @@
-import { FighterWeb } from "boxing-web";
-import { isNil } from "lodash";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
-import { FIGHTERS } from "../utils/fighters";
 import { cn } from "../utils/classNameMerge";
+import { FIGHTERS } from "../utils/fighters";
 
 import TopBar from "./Fight/TopBar";
 import FighterCard from "./FighterCard";
 import FighterIndicator from "./FighterIndicator";
-import StaticFighterIndicator from "./StaticFighterIndicator";
 
 interface Props {
-  startFight: (fighter0Num: number, fighter1Num: number) => void;
+  onSelectFighterNumbers: (s: [number | null, number | null]) => void;
+  selectedFighterNumbers: [number | null, number | null];
 }
 
-const SelectFighters = ({ startFight: startFightProp }: Props) => {
+const SelectFighters = ({
+  selectedFighterNumbers,
+  onSelectFighterNumbers,
+}: Props) => {
   const [isGridScrolled, setIsGridScrolled] = useState(false);
-  const [selectedFighter0, setSelectedFighter0] = useState<FighterWeb | null>(
-    null,
-  );
-  const [selectedFighter1, setSelectedFighter1] = useState<FighterWeb | null>(
-    null,
+
+  const [selectingState, setSelectingState] = useState<0 | 1>(
+    selectedFighterNumbers[0] === null ? 0 : 1,
   );
 
-  const [selectingState, setSelectingState] = useState<"p0" | "p1" | "fight">(
-    "p0",
+  const selectedFighters = useMemo(
+    () =>
+      selectedFighterNumbers.map(
+        (number) => FIGHTERS.find((f) => f.number === number) ?? null,
+      ),
+    [selectedFighterNumbers],
   );
-  const isStartFightDisabled =
-    isNil(selectedFighter0) || isNil(selectedFighter1);
 
-  const startFight = () => {
-    if (!selectedFighter0 || !selectedFighter1) {
-      return;
+  const selectedFighter = selectedFighters[selectingState];
+
+  const setSelectedFighterNumber = (fighterNumber: number) => {
+    if (selectingState === 0) {
+      setSelectingState(1);
     }
-    startFightProp(selectedFighter0.number, selectedFighter1.number);
-  };
 
-  const selectedFighter =
-    selectingState === "p0" ? selectedFighter0 : selectedFighter1;
-  const setSelectedFighter = (fighter: FighterWeb) => {
-    if (selectingState === "p0") {
-      setSelectedFighter0(fighter);
-      setSelectingState("p1");
-    } else {
-      setSelectedFighter1(fighter);
-      // NOTE: ensure both fighters are selected
-      if (selectedFighter0) {
-        setSelectingState("fight");
-      }
-    }
+    const newSelectedFighterNumbers = [...selectedFighterNumbers] as [
+      number | null,
+      number | null,
+    ];
+    newSelectedFighterNumbers[selectingState] = fighterNumber;
+    onSelectFighterNumbers(newSelectedFighterNumbers);
   };
 
   return (
     <div className="size-full px-2 md:px-4 pt-3 flex flex-col items-center relative">
       <TopBar />
-      <div
-        className={cn(
-          "flex flex-col absolute top-1/2 left-1/2 -translate-x-[50%] -translate-y-[50%] gap-12 opacity-0 items-center pointer-events-none",
-          { "opacity-100 pointer-events-auto": selectingState === "fight" },
-        )}
-      >
-        <div className="flex flex-col gap-4 w-full items-center ">
-          <StaticFighterIndicator
-            fighter={selectedFighter0}
-            className={cn(
-              "translate-x-[-100vw] transition-all duration-300 opacity-0",
-              {
-                "translate-x-0 opacity-100": selectingState === "fight",
-              },
-            )}
-          />
-          <span className={cn("transition-all duration-100")}>VS</span>
-          <StaticFighterIndicator
-            fighter={selectedFighter1}
-            className={cn(
-              "translate-x-[100vw] transition-all duration-300 opacity-0",
-              {
-                "translate-x-0 opacity-100": selectingState === "fight",
-              },
-            )}
-          />
-        </div>
-        <div
-          className={cn(
-            "flex gap-4 text-lg",
-            "translate-y-[100%] transition-all duration-300 opacity-0",
-            {
-              "translate-y-0 opacity-100": selectingState === "fight",
-            },
-          )}
-        >
-          <button
-            className="ring-zinc-700 ring-1 px-8 py-4 rounded-[4px] hover:bg-zinc-200"
-            onClick={() => setSelectingState("p1")}
-          >
-            BACK
-          </button>
-          <button
-            className="bg-zinc-700 px-8 py-4 text-white rounded-[4px] relative overflow-hidden"
-            disabled={isStartFightDisabled}
-            onClick={startFight}
-          >
-            <div className="absolute top-0 left-0 size-full animate-blink bg-[#FF3131] z-0" />
-            <span className="z-20 relative">FIGHT</span>
-          </button>
-        </div>
-      </div>
-      <div
+      <motion.div
+        initial={{ translateY: "-100px", opacity: 0 }}
+        animate={{ translateY: "0", opacity: 1 }}
+        transition={{ duration: 0.1 }}
         className={cn(
           "flex-col gap-3 pt-[30px] pb-[20px]",
           "flex md:flex-row items-center md:gap-5 md:pt-[60px] md:pb-[40px]",
-          {
-            "pointer-events-none": selectingState === "fight",
-          },
         )}
       >
         <FighterIndicator
-          fighter={selectedFighter0}
-          isBlinking={selectingState === "p0"}
-          onClick={() => setSelectingState("p0")}
-          className={cn("transition-all duration-100", {
-            "scale-95 opacity-0": selectingState === "fight",
-          })}
+          fighter={selectedFighters[0]}
+          isBlinking={selectingState === 0}
+          onClick={() => setSelectingState(0)}
+          className={cn("transition-all duration-100")}
         />
-        <span
-          className={cn("transition-all duration-100", {
-            "scale-95 opacity-0": selectingState === "fight",
-          })}
-        >
-          VS
-        </span>
+        <span className={cn("transition-all duration-100")}>VS</span>
 
         <FighterIndicator
-          fighter={selectedFighter1}
-          isBlinking={selectingState === "p1"}
-          onClick={() => setSelectingState("p1")}
-          className={cn("transition-all duration-100", {
-            "scale-95 opacity-0": selectingState === "fight",
-          })}
+          fighter={selectedFighters[1]}
+          isBlinking={selectingState === 1}
+          onClick={() => setSelectingState(1)}
+          className={cn("transition-all duration-100")}
         />
-      </div>
+      </motion.div>
       <div
         className={cn(
           "w-full flex-1 overflow-hidden flex flex-col items-center",
         )}
       >
         <div
-          className={cn(
-            "h-full w-fit transition-all duration-200 border-t border-transparent relative",
-            {
-              "translate-y-[100vh]": selectingState === "fight",
-              "border-t-zinc-700": isGridScrolled,
-            },
-          )}
+          className={cn("h-full w-fit transition-all duration-200 relative")}
         >
           <div
+            className={cn(
+              "absolute w-0 border-t transition-all duration-200 border-t-zinc-400 translate-x-[-50%] left-1/2 z-20 h-[2px] top-0 opacity-0",
+              {
+                "w-full opacity-100": isGridScrolled,
+              },
+            )}
+          />
+          <motion.div
             className="grid grid-cols-2 md:grid-cols-3 w-full max-w-[960px] gap-x-0 gap-y-8 overflow-auto items-start min-h-0 auto-rows-min scrollbar-hide h-full pt-[40px] pb-[60px]"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: {
+                transition: {
+                  duration: 0.05,
+                  delayChildren: 0.15,
+                  staggerChildren: 0.05,
+                },
+              },
+            }}
             onScroll={(e) =>
               setIsGridScrolled(e.currentTarget.scrollTop > 40.0)
             }
           >
             {FIGHTERS.map((fighter) => (
               <FighterCard
+                key={fighter.number}
                 fighter={fighter}
                 isSelected={selectedFighter?.number === fighter.number}
-                onClick={() => setSelectedFighter(fighter)}
+                onClick={() => setSelectedFighterNumber(fighter.number)}
                 className="shrink-0 m-2 md:m-4 h-full"
               />
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
