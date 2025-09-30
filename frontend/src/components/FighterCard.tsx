@@ -21,7 +21,11 @@ const FighterCard = ({ fighter, isSelected, className, onClick }: Props) => {
       )}
       variants={{
         hidden: { opacity: 0, translateY: 100 },
-        visible: { opacity: 1, translateY: 0, transition: { ease: "linear" } },
+        visible: {
+          opacity: 1,
+          translateY: 0,
+          transition: { ease: "linear", duration: 0.05 },
+        },
       }}
       onClick={onClick}
     >

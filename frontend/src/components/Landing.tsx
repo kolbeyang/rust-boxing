@@ -14,14 +14,27 @@ const Landing = () => {
 
   return (
     <div className="flex size-full flex-col items-center justify-center gap-8 ">
-      <div
+      <motion.div
+        initial={{
+          translateY: "-100px",
+          opacity: 0,
+        }}
+        animate={{
+          translateY: "0px",
+          opacity: 1,
+        }}
+        transition={{
+          ease: "linear",
+          delay: 1.15,
+          duration: 0.05,
+        }}
         className={cn(
           "rounded-[4px] bg-zinc-200 px-4 py-3 text-[60px] leading-[60px] font-family-shoulders font-stretch-extra-condensed font-semibold ",
           "md:px-4 md:py-3 md:text-[80px] md:leading-[80px] font-family-shoulders font-stretch-extra-condensed font-semibold ",
         )}
       >
         RUST BOXING
-      </div>
+      </motion.div>
       <span className="w-[360px] max-w-full md:w-[460px] text-center">
         {words.map((word, index) => (
           <>
@@ -55,7 +68,7 @@ const Landing = () => {
             translateY: "0",
           }}
           transition={{
-            duration: 0.05,
+            duration: 0.08,
             delay: 1.0,
             ease: "linear",
           }}
@@ -103,7 +116,7 @@ const Landing = () => {
         }}
         transition={{
           ease: "linear",
-          delay: 1.1,
+          delay: 1.3,
           duration: 0.05,
         }}
         onClick={() => navigate("/home")}

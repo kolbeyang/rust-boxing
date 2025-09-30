@@ -98,7 +98,7 @@ const SelectFighters = ({
                 transition: {
                   duration: 0.05,
                   delayChildren: 0.15,
-                  staggerChildren: 0.05,
+                  staggerChildren: 0.08,
                 },
               },
             }}
