@@ -14,8 +14,8 @@ const TopBar = ({ goBack }: Props) => {
       {goBack && (
         <button
           className={cn(
-            "rounded-[4px] bg-gray-200 p-2 tracking-widest",
-            "hover:bg-gray-300 active:bg-gray-400",
+            "rounded-[4px] bg-zinc-200 p-2 tracking-widest",
+            "hover:bg-zinc-300 active:bg-zinc-400",
           )}
           onClick={goBack}
         >
@@ -24,8 +24,8 @@ const TopBar = ({ goBack }: Props) => {
       )}
       <button
         className={cn(
-          "rounded-[4px] bg-gray-200 px-3 font-family-shoulders font-stretch-extra-condensed font-semibold min-h-[40px] text-[20px] justify-center items-center",
-          "hover:bg-gray-300 active:bg-gray-400 ",
+          "rounded-[4px] bg-zinc-200 px-3 font-family-shoulders font-stretch-extra-condensed font-semibold min-h-[40px] text-[20px] justify-center items-center",
+          "hover:bg-zinc-300 active:bg-zinc-400 ",
         )}
         onClick={() => navigate("/")}
       >
