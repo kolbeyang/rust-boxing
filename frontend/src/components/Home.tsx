@@ -21,6 +21,11 @@ const Home = () => {
   const isBothFightersSelected =
     !isNil(selectedFighterNumbers[0]) && !isNil(selectedFighterNumbers[1]);
 
+  const reset = () => {
+    setSelectedFighterNumbers([null, null]);
+    setMode("select");
+  };
+
   return (
     <AnimatePresence mode="wait">
       {mode === "fight" && isBothFightersSelected ? (
@@ -29,6 +34,7 @@ const Home = () => {
           f0Num={selectedFighterNumbers[0]!}
           f1Num={selectedFighterNumbers[1]!}
           goBack={() => setMode("select")}
+          reset={reset}
         />
       ) : (
         <SelectFighters

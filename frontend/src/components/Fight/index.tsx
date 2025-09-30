@@ -10,9 +10,10 @@ interface Props {
   f0Num: number;
   f1Num: number;
   goBack: () => void;
+  reset: () => void;
 }
 
-const Fight = ({ goBack, ...props }: Props) => {
+const Fight = ({ goBack, reset, ...props }: Props) => {
   const [screen, setScreen] = useState<"start" | "main" | "end">("start");
   const [winnerNum, setWinnerNum] = useState<number | null>(null);
 
@@ -37,7 +38,7 @@ const Fight = ({ goBack, ...props }: Props) => {
         <FightEndScreen
           key="win-screen"
           winnerNumber={winnerNum!}
-          onBack={goBack}
+          onBack={reset}
         />
       )}
 
