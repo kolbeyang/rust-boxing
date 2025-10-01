@@ -24,7 +24,11 @@ const FighterCard = ({ fighter, isSelected, className, onClick }: Props) => {
         visible: {
           opacity: 1,
           translateY: 0,
-          transition: { ease: "linear", duration: 0.05 },
+          transition: {
+            ease: "linear",
+            duration: 0.05,
+            delayChildren: 0.2,
+          },
         },
       }}
       onClick={onClick}
@@ -43,7 +47,19 @@ const FighterCard = ({ fighter, isSelected, className, onClick }: Props) => {
         <span className="">{name.toUpperCase()}</span>
         <span className="">{number.toString().padStart(3, "0")}</span>
       </div>
-      <div className="px-3 py-2 shrink-0">{`"...${description}..."`}</div>
+      <div className="px-3 py-2 shrink-0">
+        <motion.span
+          className="inline-block"
+          variants={{
+            hidden: { opacity: 1, translateY: "400px" },
+            visible: {
+              opacity: 1,
+              translateY: 0,
+              transition: { ease: "linear", duration: 0.05 },
+            },
+          }}
+        >{`"...${description}..."`}</motion.span>
+      </div>
     </motion.div>
   );
 };
